@@ -19,8 +19,39 @@ custom-form/
 ├── ww-config.js          # Editor configuration (properties, triggers, actions)
 ├── CLAUDE.md             # This file
 └── src/
-    └── wwElement.vue     # Vue 3 Composition API component
+    ├── wwElement.vue     # Entry point: template, setup orchestration, scoped style import
+    ├── composables/
+    │   ├── index.js          # Barrel re-exports
+    │   ├── useI18n.js        # Translations (FR/EN) + t() function
+    │   ├── useFields.js      # Field processing, auto-generate, formula mapping
+    │   ├── useFormState.js   # State, validation, dirty tracking, handlers, actions, watchers
+    │   └── useStyles.js      # rootStyle + formClasses computed
+    ├── components/
+    │   ├── SmartSelect.vue   # Smart select: button group (≤ threshold) or searchable dropdown (> threshold)
+    │   └── SearchSelect.vue  # External search: debounce → search-query event → bound options → { value, label }
+    ├── utils/
+    │   └── helpers.js        # Pure functions (no Vue, no WeWeb): parseOptions, isInputType, etc.
+    └── styles/
+        ├── form.scss         # Main form styles (imported as scoped in wwElement.vue)
+        ├── smart-select.scss # SmartSelect styles (imported as scoped in SmartSelect.vue)
+        └── search-select.scss # SearchSelect styles (imported as scoped in SearchSelect.vue)
 ```
+
+### Architecture
+
+**Pure utils** (`utils/helpers.js`) — stateless functions shared across composables and template:
+`isInputType`, `parseOptions`, `getOptionLabel`, `formatDisplayValue`, `inferFieldType`, `formatFieldLabel`, `resolvePathValue`
+
+**Composables** (`composables/`) — Vue 3 composition functions:
+- **`useI18n(props)`** → `{ t }` — translations keyed by `props.content?.lang`
+- **`useFields(props, { isDisplayMode })`** → `{ processedFields, getDefaultValues }` — field resolution with formula mapping
+- **`useFormState(props, ctx, { processedFields, getDefaultValues, isReadOnly, t })`** → state refs, validation, dirty tracking, event handlers, WeWeb actions
+- **`useStyles(props)`** → `{ rootStyle, formClasses }` — CSS variable mapping
+
+**Styles** (`styles/form.scss`) — all SCSS imported via `@import` in wwElement.vue's scoped style block.
+
+Mode computeds (`isDisplayMode`, `isAddMode`, `isEditMode`, `isReadOnly`) are defined in `wwElement.vue` setup.
+Editor-only code (`generateFields`, `isEditing`) stays in `wwElement.vue` inside `/* wwEditor:start/end */` blocks.
 
 ## Component Architecture
 
@@ -36,7 +67,14 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 
 ### Field Types
 
-`text`, `email`, `password`, `number`, `tel`, `url`, `date`, `textarea`, `select`, `checkbox`, `radio`
+`text`, `email`, `password`, `number`, `tel`, `url`, `date`, `textarea`, `select`, `checkbox`, `radio`, `search`, `section`
+
+**`section`** — Visual separator with optional title and a horizontal line. No value in `formData`. Set `label` to the section title (e.g. "Localisation"), leave empty for a plain divider. Width `full` spans the whole row.
+
+### Per-field Read Only & Show Label
+
+- **`readOnly` (OnOff, default `false`)** — Makes the field read-only regardless of the global `readOnly` prop. Applies `disabled` + `readonly` HTML attributes and the `ww-form-input--readonly` CSS class. The field value is preserved in `formData` but cannot be edited. Global `isReadOnly` OR `field.readOnly` makes a field readonly.
+- **`showLabel` (OnOff, default `true`)** — Controls whether the field label is rendered. When `false`, the label element is not rendered at all (no empty space). For checkboxes, also hides the inline label text.
 
 ### Internal Variables (exposed to WeWeb workflows)
 
@@ -60,6 +98,7 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 | `field-focus` | `{ fieldId }` | A field received focus |
 | `field-blur` | `{ fieldId, value }` | A field lost focus |
 | `data-loaded` | `{ formData }` | initialData was applied |
+| `search-query` | `{ fieldId, query }` | User typed in external search field |
 
 **Submit event `changedFields` format:**
 ```javascript
@@ -81,6 +120,7 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 | `setFieldError` | `(fieldId, error)` | Manually set an error on a field |
 | `clearErrors` | none | Clear all validation errors |
 | `loadData` | `(data)` | Load a JSON object into the form |
+| `setSearchResults` | `(fieldId, results)` | Inject search results for a `search` field (no external variable needed) |
 
 ### Validation Types
 
@@ -92,7 +132,7 @@ Validation messages support custom text per field. Default messages use the sele
 
 Property `lang` (TextSelect, bindable): `"fr"` (default) or `"en"`
 
-Translated strings: required, emailInvalid, minLength, maxLength, minValue, maxValue, patternInvalid, selectPlaceholder, was, submit, reset.
+Translated strings: required, emailInvalid, minLength, maxLength, minValue, maxValue, patternInvalid, selectPlaceholder, noResults, loading, selected, was, submit, reset.
 
 ### Data Binding & Field Generation
 
@@ -100,7 +140,74 @@ Translated strings: required, emailInvalid, minLength, maxLength, minValue, maxV
 2. **autoGenerateFields** (OnOff): Auto-create fields from JSON keys
 3. **generateFieldsButton** (editor-only): "Generate fields from data" button that flattens nested JSON into dot-path fields
 4. **defaultValue** on each field: Can be a dot-path into initialData (e.g., `user.address.city`)
-5. **Formula properties**: `fieldsIdFormula`, `fieldsLabelFormula`, `fieldsTypeFormula`, `fieldsPlaceholderFormula`, `fieldsRequiredFormula`, `fieldsOptionsFormula`, `fieldsDefaultValueFormula` for mapping when fields array is bound
+5. **Formula properties**: `fieldsIdFormula`, `fieldsLabelFormula`, `fieldsTypeFormula`, `fieldsPlaceholderFormula`, `fieldsRequiredFormula`, `fieldsOptionsFormula`, `fieldsOptionsValueFormula`, `fieldsOptionsLabelFormula`, `fieldsOptionsThresholdFormula`, `fieldsMultipleFormula`, `fieldsSearchDebounceFormula`, `fieldsDefaultValueFormula` for mapping when fields array is bound
+
+### Select/Radio — SmartSelect Component
+
+Both `select` and `radio` field types use the `SmartSelect` component (`src/components/SmartSelect.vue`) which adapts its UI based on the number of options:
+
+- **≤ threshold** (default 10): **Button group (toggle)** — buttons side by side, selected option highlighted with accent color. Multiple selection: clicking toggles the value in/out of the array.
+- **> threshold**: **Searchable dropdown** — input control that shows the selected label, opens a dropdown list with case-insensitive search, keyboard navigation (↑↓ Enter Escape Backspace), click outside to close, scroll to highlighted option, × button to clear.
+
+Per-field property `optionsThreshold` (Number, default 10) controls the cutoff. Formula: `fieldsOptionsThresholdFormula`.
+
+### Select — Multi
+
+**`multiple` (OnOff, default false)** — Available on `select` fields. Allow selecting multiple values. The field value is stored as an array `[]`. `getDefaultValues` returns `[]` for `multiple` fields. The dropdown stays open after each selection. Backspace removes the last value when the search input is empty. Formula: `fieldsMultipleFormula`.
+
+### Search — External Search Type
+
+The `search` field type uses the `SearchSelect` component (`src/components/SearchSelect.vue`). It is purpose-built for API-driven search:
+
+- Always in dropdown mode (no button group — the option list is not known in advance)
+- User types → debounce delay (`searchDebounce` ms, default 300) → `search-query` trigger event fires with `{ fieldId, query }`
+- Results injected via action `setSearchResults(fieldId, results)` — no external variable needed
+- Selecting an option stores an object `{ value, label }` (not a primitive) — this avoids needing to re-fetch the label after selection
+- Clear button sets value to `null`
+- Loading spinner shown while user has typed and results have not yet arrived
+- Keyboard navigation: ↑↓ Enter Escape
+- Click outside closes the dropdown
+
+**Recommended workflow (no external variable required):**
+```
+On Search Query
+  → quick_search workflow (API call with event.query, event.fieldId)
+  → [composant].setSearchResults(event.fieldId, résultat_api)
+```
+
+**Stored value format (in `formData`):** the **full raw object** (e.g. `{ id: 17, cou_label_fr: "Bangladesh", ... }`), or `null`. Not `{ value, label }`.
+
+**IMPORTANT — default value must be `null`**: The `getDefaultValues()` function returns `null` for `search` fields. The `processedFields` watcher preserves `null` and only keeps current value if it's a valid object with the `searchValueKey` property. This prevents the `Invalid prop: Expected Object, got String ""` Vue warning on `SearchSelect`'s `modelValue` prop.
+
+**`searchDebounce` (Number, default 300ms)** — Delay in ms before firing the `search-query` event after typing (0–2000ms). Formula: `fieldsSearchDebounceFormula`.
+
+**`searchValueKey` (Text, default `"id"`)** — Key from the raw result object used as the identity value (for dirty tracking, required validation, and deduplication). Formula: `fieldsSearchValueKeyFormula`.
+
+**`searchLabelTemplate` (Text, default `""`)** — Template string to build the displayed label using `{field}` placeholders. e.g. `"{cou_label_fr} ({cou_iso_code})"`. If empty, falls back to the `searchValueKey` value as label. Formula: `fieldsSearchLabelTemplateFormula`.
+
+**Mapping logic:**
+- `setSearchResults(fieldId, rawArray)` stores raw objects in `searchResults` ref
+- `searchOptionsMap` (computed) maps raw items to `{ value, label }` via `mapSearchItem(item, field)` for `SearchSelect` display
+- On selection, `handleSearchSelect(field, { value, label })` looks up the raw item in `searchResults` by `searchValueKey` and stores the full raw object in `formData`
+- `getSearchModelValue(field)` derives `{ value, label }` from the stored raw object for `SearchSelect`'s `modelValue`
+- `getSearchDisplayLabel(field)` builds the label from the stored raw object for display mode and dirty tracking
+
+**`search-query` trigger event** — `{ fieldId: string, query: string }` — fired after debounce when user types in a `search` field.
+
+**Display mode:** Shows `formDataValues[field.id]?.label ?? formDataValues[field.id]?.value ?? '—'`
+
+**Dirty tracking:** Compares by `.value` property (not object reference).
+
+**Required validation:** Valid only when `value?.value` is truthy.
+
+### Select/Radio Options Binding
+
+Options for `select` and `radio` fields support bound arrays of objects with custom key mapping:
+
+1. **Per-field keys** (manual fields): `optionsValueKey` (default: `"value"`) and `optionsLabelKey` (default: `"label"`) on each field definition
+2. **Formula mapping** (bound fields): `fieldsOptionsValueFormula` and `fieldsOptionsLabelFormula` resolve keys dynamically
+3. **Fallback chain**: formula result → per-field key → defaults (`"value"` / `"label"`) → fallback to `id`/`name` properties
+4. `parseOptions(options, valueKey, labelKey)` handles both array-of-objects and comma-separated strings
 
 ### Dirty Field Tracking (Edit mode only)
 
@@ -121,7 +228,7 @@ Translated strings: required, emailInvalid, minLength, maxLength, minValue, maxV
 
 **Layout**: `formLayout` (vertical/inline), `gap`
 **Labels**: `labelColor`, `labelFontSize`
-**Inputs**: `inputBackgroundColor`, `inputBorderColor`, `inputBorderRadius`, `inputPadding`, `inputFontSize`, `inputTextColor`, `inputFocusBorderColor`
+**Inputs**: `inputBackgroundColor`, `inputBorderColor`, `inputBorderRadius` (default: `8px`), `inputPadding`, `inputFontSize`, `inputTextColor`, `inputFocusBorderColor`
 **Dirty Fields**: `showOriginalValue`, `dirtyBackgroundColor`, `originalValueColor`, `originalValueFontSize`
 **Display Mode**: `displayValueColor`, `displayValueFontSize`
 **Errors**: `errorColor` (default: `#f44336`), `errorBackgroundColor` (default: `#ffdddd`)

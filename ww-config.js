@@ -23,6 +23,11 @@ export default {
       "fieldsPlaceholderFormula",
       "fieldsRequiredFormula",
       "fieldsOptionsFormula",
+      "fieldsOptionsValueFormula",
+      "fieldsOptionsLabelFormula",
+      "fieldsOptionsThresholdFormula",
+      "fieldsMultipleFormula",
+      "fieldsSearchDebounceFormula",
       "fieldsDefaultValueFormula",
       {
         label: "Submit & Reset",
@@ -123,6 +128,11 @@ export default {
       label: { en: "On Data Loaded" },
       event: { formData: {} },
     },
+    {
+      name: "search-query",
+      label: { en: "On Search Query" },
+      event: { fieldId: "", query: "" },
+    },
   ],
   actions: [
     { label: "Reset form", action: "resetForm" },
@@ -148,6 +158,14 @@ export default {
       label: "Load data",
       action: "loadData",
       args: [{ name: "Data (JSON object)", type: "object" }],
+    },
+    {
+      label: "Set search results",
+      action: "setSearchResults",
+      args: [
+        { name: "Field ID", type: "string" },
+        { name: "Results (array)", type: "array" },
+      ],
     },
   ],
   properties: {
@@ -336,6 +354,15 @@ export default {
             validationValue: "",
             validationMessage: "",
             options: "",
+            optionsValueKey: "value",
+            optionsLabelKey: "label",
+            optionsThreshold: 10,
+            readOnly: false,
+            showLabel: true,
+            multiple: false,
+            searchDebounce: 300,
+            searchValueKey: "id",
+            searchLabelTemplate: "",
             defaultValue: "",
             width: "full",
           },
@@ -364,8 +391,10 @@ export default {
                     { value: "date", label: "Date" },
                     { value: "textarea", label: "Textarea" },
                     { value: "select", label: "Select" },
+                    { value: "search", label: "Search (external)" },
                     { value: "checkbox", label: "Checkbox" },
                     { value: "radio", label: "Radio" },
+                    { value: "section", label: "Section separator" },
                   ],
                 },
               },
@@ -380,6 +409,14 @@ export default {
               required: {
                 label: { en: "Required" },
                 type: "OnOff",
+                hidden: array?.item?.type === "section",
+              },
+              readOnly: {
+                label: { en: "Read Only" },
+                type: "OnOff",
+                defaultValue: false,
+                hidden: array?.item?.type === "section",
+                bindable: true,
               },
               validationType: {
                 label: { en: "Validation" },
@@ -416,20 +453,125 @@ export default {
               options: {
                 label: { en: "Options" },
                 type: "Text",
+                bindable: true,
+                hidden:
+                  array?.item?.type !== "select" &&
+                  array?.item?.type !== "radio",
+                /* wwEditor:start */
+                bindingValidation: {
+                  type: "array",
+                  tooltip:
+                    'Array of objects (e.g. [{ id: 1, name: "Option 1" }]) or comma-separated string "value1:Label 1, value2:Label 2"',
+                },
+                propertyHelp: {
+                  tooltip:
+                    'Bind an array of objects, or use text format: "value1:Label 1, value2:Label 2". When binding an array, set Value Key and Label Key below.',
+                },
+                /* wwEditor:end */
+              },
+              optionsValueKey: {
+                label: { en: "Value Key" },
+                type: "Text",
+                defaultValue: "value",
                 hidden:
                   array?.item?.type !== "select" &&
                   array?.item?.type !== "radio",
                 /* wwEditor:start */
                 propertyHelp: {
                   tooltip:
-                    'Format: "value1:Label 1, value2:Label 2, value3:Label 3"',
+                    'Object key to use as option value (default: "value"). e.g. "id", "code"',
                 },
                 /* wwEditor:end */
+              },
+              optionsLabelKey: {
+                label: { en: "Label Key" },
+                type: "Text",
+                defaultValue: "label",
+                hidden:
+                  array?.item?.type !== "select" &&
+                  array?.item?.type !== "radio",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip:
+                    'Object key to use as option label (default: "label"). e.g. "name", "title"',
+                },
+                /* wwEditor:end */
+              },
+              optionsThreshold: {
+                label: { en: "Buttons / Dropdown threshold" },
+                type: "Number",
+                defaultValue: 10,
+                options: { min: 1, max: 100, step: 1 },
+                hidden:
+                  array?.item?.type !== "select" &&
+                  array?.item?.type !== "radio",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip:
+                    "Number of options below which buttons are shown instead of a searchable dropdown (default: 10).",
+                },
+                /* wwEditor:end */
+              },
+              multiple: {
+                label: { en: "Multiple selection" },
+                type: "OnOff",
+                defaultValue: false,
+                hidden: array?.item?.type !== "select" && array?.item?.type !== "radio",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip:
+                    "Allow selecting multiple values. The field value will be stored as an array.",
+                },
+                /* wwEditor:end */
+              },
+              searchDebounce: {
+                label: { en: "Debounce (ms)" },
+                type: "Number",
+                defaultValue: 300,
+                options: { min: 0, max: 2000, step: 50 },
+                hidden: array?.item?.type !== "search",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip:
+                    "Delay in ms before firing the search-query event after the user stops typing (default: 300ms).",
+                },
+                /* wwEditor:end */
+              },
+              searchValueKey: {
+                label: { en: "Value Key" },
+                type: "Text",
+                defaultValue: "id",
+                hidden: array?.item?.type !== "search",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip:
+                    'Object key used as the stored value (default: "id"). e.g. "id", "code", "uuid"',
+                },
+                /* wwEditor:end */
+              },
+              searchLabelTemplate: {
+                label: { en: "Label Template" },
+                type: "Text",
+                defaultValue: "",
+                hidden: array?.item?.type !== "search",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip:
+                    'Template string to build the displayed label. Use {field} placeholders. e.g. "{cou_label_fr} ({cou_iso_code})". Leave empty to use the value key.',
+                },
+                /* wwEditor:end */
+              },
+              showLabel: {
+                label: { en: "Show Label" },
+                type: "OnOff",
+                defaultValue: true,
+                hidden: array?.item?.type === "section",
               },
               defaultValue: {
                 label: { en: "Default Value" },
                 type: "Text",
                 bindable: true,
+                hidden: array?.item?.type === "section",
               },
               width: {
                 label: { en: "Width" },
@@ -447,8 +589,17 @@ export default {
               "id",
               "label",
               "type",
+              "showLabel",
+              "readOnly",
               "placeholder",
               "options",
+              "optionsValueKey",
+              "optionsLabelKey",
+              "optionsThreshold",
+              "multiple",
+              "searchDebounce",
+              "searchValueKey",
+              "searchLabelTemplate",
               "defaultValue",
               "width",
               {
@@ -586,6 +737,101 @@ export default {
       defaultValue: {
         type: "f",
         code: "context.mapping?.['options']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.fields) ||
+        !content.fields?.length ||
+        !boundProps.fields,
+    },
+    fieldsOptionsValueFormula: {
+      label: { en: "Options Value Key" },
+      type: "Formula",
+      section: "settings",
+      options: (content) => ({
+        template:
+          Array.isArray(content.fields) && content.fields.length > 0
+            ? content.fields[0]
+            : null,
+      }),
+      defaultValue: {
+        type: "f",
+        code: "context.mapping?.['optionsValueKey']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.fields) ||
+        !content.fields?.length ||
+        !boundProps.fields,
+    },
+    fieldsOptionsLabelFormula: {
+      label: { en: "Options Label Key" },
+      type: "Formula",
+      section: "settings",
+      options: (content) => ({
+        template:
+          Array.isArray(content.fields) && content.fields.length > 0
+            ? content.fields[0]
+            : null,
+      }),
+      defaultValue: {
+        type: "f",
+        code: "context.mapping?.['optionsLabelKey']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.fields) ||
+        !content.fields?.length ||
+        !boundProps.fields,
+    },
+    fieldsOptionsThresholdFormula: {
+      label: { en: "Options Threshold" },
+      type: "Formula",
+      section: "settings",
+      options: (content) => ({
+        template:
+          Array.isArray(content.fields) && content.fields.length > 0
+            ? content.fields[0]
+            : null,
+      }),
+      defaultValue: {
+        type: "f",
+        code: "context.mapping?.['optionsThreshold']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.fields) ||
+        !content.fields?.length ||
+        !boundProps.fields,
+    },
+    fieldsMultipleFormula: {
+      label: { en: "Multiple Selection" },
+      type: "Formula",
+      section: "settings",
+      options: (content) => ({
+        template:
+          Array.isArray(content.fields) && content.fields.length > 0
+            ? content.fields[0]
+            : null,
+      }),
+      defaultValue: {
+        type: "f",
+        code: "context.mapping?.['multiple']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.fields) ||
+        !content.fields?.length ||
+        !boundProps.fields,
+    },
+    fieldsSearchDebounceFormula: {
+      label: { en: "Search Debounce (ms)" },
+      type: "Formula",
+      section: "settings",
+      options: (content) => ({
+        template:
+          Array.isArray(content.fields) && content.fields.length > 0
+            ? content.fields[0]
+            : null,
+      }),
+      defaultValue: {
+        type: "f",
+        code: "context.mapping?.['searchDebounce']",
       },
       hidden: (content, sidepanelContent, boundProps) =>
         !Array.isArray(content.fields) ||

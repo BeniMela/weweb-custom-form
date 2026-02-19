@@ -1,0 +1,305 @@
+.ww-dynamic-form {
+  width: 100%;
+}
+
+// ==========================================
+// Layout
+// ==========================================
+.ww-form-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ww-form-gap, 16px);
+
+  &--inline {
+    flex-direction: row;
+    align-items: flex-end;
+  }
+}
+
+.ww-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &--full {
+    width: 100%;
+  }
+
+  &--half {
+    width: calc(50% - var(--ww-form-gap, 16px) / 2);
+  }
+
+  &--third {
+    width: calc(33.333% - var(--ww-form-gap, 16px) * 2 / 3);
+  }
+
+  &--error .ww-form-input {
+    border-color: var(--ww-form-error-color, #ef4444);
+  }
+
+  &--dirty.ww-form-field--error .ww-form-input {
+    background-color: var(--ww-form-error-bg, #ffdddd);
+  }
+}
+
+// ==========================================
+// Labels
+// ==========================================
+.ww-form-label {
+  font-size: var(--ww-form-label-font-size, 14px);
+  color: var(--ww-form-label-color, #374151);
+  font-weight: 500;
+}
+
+.ww-form-required {
+  color: var(--ww-form-error-color, #ef4444);
+  margin-left: 2px;
+}
+
+// ==========================================
+// Inputs
+// ==========================================
+.ww-form-input {
+  width: 100%;
+  padding: var(--ww-form-input-padding, 8px);
+  font-size: var(--ww-form-input-font-size, 14px);
+  color: var(--ww-form-input-color, #111827);
+  background-color: var(--ww-form-input-bg, #ffffff);
+  border: 1px solid var(--ww-form-input-border, #d1d5db);
+  border-radius: var(--ww-form-input-radius, 8px);
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+  font-family: inherit;
+
+  &:focus {
+    border-color: var(--ww-form-input-focus, #3b82f6);
+    box-shadow: 0 0 0 2px
+      color-mix(
+        in srgb,
+        var(--ww-form-input-focus, #3b82f6) 20%,
+        transparent
+      );
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+
+  &--readonly {
+    background-color: #f9fafb;
+    cursor: default;
+    opacity: 0.8;
+
+    &:focus {
+      border-color: var(--ww-form-input-border, #d1d5db);
+      box-shadow: none;
+    }
+  }
+}
+
+.ww-form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.ww-form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M3 5l3 3 3-3'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  padding-right: 28px;
+  cursor: pointer;
+
+  &.ww-form-input--readonly {
+    cursor: default;
+  }
+}
+
+// ==========================================
+// Checkbox
+// ==========================================
+.ww-form-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--ww-form-label-font-size, 14px);
+  color: var(--ww-form-label-color, #374151);
+  cursor: pointer;
+}
+
+.ww-form-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--ww-form-input-focus, #3b82f6);
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+}
+
+// ==========================================
+// Radio
+// ==========================================
+.ww-form-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ww-form-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--ww-form-input-font-size, 14px);
+  color: var(--ww-form-input-color, #111827);
+  cursor: pointer;
+}
+
+.ww-form-radio {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--ww-form-input-focus, #3b82f6);
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+}
+
+// ==========================================
+// Dirty field styles
+// ==========================================
+.ww-form-input--dirty {
+  background-color: var(--ww-form-dirty-bg, #fefce8);
+}
+
+.ww-form-input--error {
+  background-color: var(--ww-form-error-bg, #ffdddd);
+  border-color: var(--ww-form-error-color, #ef4444);
+}
+
+.ww-form-checkbox-label--dirty,
+.ww-form-radio-group--dirty {
+  background-color: var(--ww-form-dirty-bg, #fefce8);
+  border-radius: var(--ww-form-input-radius, 8px);
+  padding: 4px 8px;
+}
+
+.ww-form-original {
+  font-size: var(--ww-form-original-font-size, 12px);
+  color: var(--ww-form-original-color, #9ca3af);
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.ww-form-error {
+  font-size: 12px;
+  color: var(--ww-form-error-color, #ef4444);
+  margin-top: 2px;
+}
+
+// ==========================================
+// Section separator
+// ==========================================
+.ww-form-field--section {
+  align-self: flex-end; // align with bottom of row in inline/wrap layouts
+}
+
+.ww-form-section {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding-top: 4px;
+
+  &::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: var(--ww-form-input-border, #d1d5db);
+  }
+}
+
+.ww-form-section-title {
+  font-size: var(--ww-form-label-font-size, 14px);
+  font-weight: 600;
+  color: var(--ww-form-label-color, #374151);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+// ==========================================
+// Display mode
+// ==========================================
+.ww-form-display-value {
+  font-size: var(--ww-form-display-font-size, 14px);
+  color: var(--ww-form-display-color, #111827);
+  padding: 4px 0;
+  word-break: break-word;
+}
+
+.ww-form-display-bool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: #fee2e2;
+  color: #dc2626;
+
+  &--true {
+    background-color: #dcfce7;
+    color: #16a34a;
+  }
+}
+
+// ==========================================
+// Buttons
+// ==========================================
+.ww-form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: var(--ww-form-gap, 16px);
+  justify-content: flex-end;
+}
+
+.ww-form-btn {
+  padding: 8px 20px;
+  font-size: var(--ww-form-input-font-size, 14px);
+  font-family: inherit;
+  border-radius: var(--ww-form-input-radius, 8px);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &--submit {
+    background-color: var(--ww-form-input-focus, #3b82f6);
+    color: #ffffff;
+  }
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+      opacity: 0.5;
+    }
+  }
+
+  &--reset {
+    background-color: transparent;
+    color: var(--ww-form-label-color, #374151);
+    border-color: var(--ww-form-input-border, #d1d5db);
+  }
+}
