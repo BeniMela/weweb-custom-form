@@ -210,7 +210,7 @@
 </template>
 
 <script>
-import { computed } from "vue";
+import { computed, watch, ref } from "vue";
 import { useI18n, useFields, useFormState, useStyles } from "./composables";
 import { isInputType, parseOptions, getOptionLabel, formatDisplayValue, inferFieldType, formatFieldLabel } from "./utils/helpers";
 import SmartSelect from "./components/SmartSelect.vue";
@@ -258,8 +258,9 @@ export default {
       return { value, label };
     }
 
-    // Computed map fieldId → options array, reactive to searchResults changes
-    const searchOptionsMap = computed(() => {
+    // Reactive map fieldId → options array, updated whenever searchResults changes
+    const searchOptionsMap = ref({});
+    function rebuildSearchOptionsMap() {
       const map = {};
       for (const field of processedFields.value) {
         if (field.type !== "search") continue;
@@ -274,8 +275,10 @@ export default {
           map[field.id] = parseOptions(field.options, field.optionsValueKey, field.optionsLabelKey);
         }
       }
-      return map;
-    });
+      searchOptionsMap.value = map;
+    }
+    watch(form.searchResults, rebuildSearchOptionsMap, { deep: true, immediate: true });
+    watch(processedFields, rebuildSearchOptionsMap);
 
     function getSearchOptions(field) {
       return searchOptionsMap.value[field.id] ?? [];

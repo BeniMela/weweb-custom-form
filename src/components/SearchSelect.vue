@@ -179,7 +179,7 @@ export default {
       if (isOpen.value) {
         highlightedIndex.value = props.options.length > 0 ? 0 : -1;
       }
-    });
+    }, { deep: true });
 
     function handleKeydown(e) {
       if (!isOpen.value) {
