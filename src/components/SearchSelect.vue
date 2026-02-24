@@ -1,7 +1,7 @@
 <template>
   <div ref="containerRef" class="ww-search-select" :class="containerClasses">
     <!-- Control -->
-    <div class="ww-search-select-control ww-form-input" :class="[{ 'ww-search-select-control--open': isOpen }, inputClass]">
+    <div class="ww-search-select-control" :class="[{ 'ww-search-select-control--open': isOpen }, inputClass]">
       <!-- Selected label (shown when not searching) -->
       <span v-if="hasSelection && !isSearching" class="ww-search-select-label">
         {{ modelValue.label }}

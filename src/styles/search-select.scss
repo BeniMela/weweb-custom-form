@@ -8,12 +8,23 @@
 }
 
 // Control (the visible input-like trigger)
-// Note: ww-form-input base styles (border, background, radius, padding) come from form.scss
 .ww-search-select-control {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding-right: 52px !important; // room for clear + arrow icons
+  // Base input styles (replicated here because ww-form-input is scoped to parent)
+  width: 100%;
+  padding: var(--ww-form-input-padding, 8px);
+  padding-right: 52px; // room for clear + arrow icons
+  font-size: var(--ww-form-input-font-size, 14px);
+  color: var(--ww-form-input-color, #111827);
+  background-color: var(--ww-form-input-bg, #ffffff);
+  border: 1px solid var(--ww-form-input-border, #d1d5db);
+  border-radius: var(--ww-form-input-radius, 8px);
+  outline: none;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
+  font-family: inherit;
   cursor: text;
   position: relative;
 
