@@ -16,7 +16,6 @@
   padding-right: 52px !important; // room for clear + arrow icons
   cursor: text;
   position: relative;
-  min-height: calc(var(--ww-form-input-font-size, 14px) + 20px);
 
   &--open,
   &:focus-within {
