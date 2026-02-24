@@ -362,6 +362,7 @@ export default {
             readOnly: false,
             hidden: false,
             showLabel: true,
+            validationFormula: null,
             multiple: false,
             searchDebounce: 300,
             searchValueKey: "id",
@@ -470,8 +471,22 @@ export default {
               validationMessage: {
                 label: { en: "Error Message" },
                 type: "Text",
-                hidden: array?.item?.validationType === "none",
+                hidden: array?.item?.validationType === "none" && !array?.item?.validationFormula,
                 bindable: true,
+              },
+              validationFormula: {
+                label: { en: "Custom Validation (Formula)" },
+                type: "Text",
+                bindable: true,
+                /* wwEditor:start */
+                bindingValidation: {
+                  type: "boolean",
+                  tooltip: "Bind a formula that returns true if the field is valid, false otherwise. Evaluated after built-in validation. Use validationMessage for the error text.",
+                },
+                propertyHelp: {
+                  tooltip: "Bind a formula returning true (valid) or false (invalid). Example: formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_iso_code)",
+                },
+                /* wwEditor:end */
               },
               options: {
                 label: { en: "Options" },
@@ -634,6 +649,7 @@ export default {
                   "validationType",
                   "validationValue",
                   "validationMessage",
+                  "validationFormula",
                 ],
               },
             ],

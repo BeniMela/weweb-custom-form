@@ -88,6 +88,7 @@ export function useFields(props, { isDisplayMode }) {
         validationType: field?.validationType ?? "none",
         validationValue: String(validationValue),
         validationMessage: field?.validationMessage ?? "",
+        validationFormula: field?.validationFormula ?? null,
         options,
         optionsValueKey: String(optionsValueKey),
         optionsLabelKey: String(optionsLabelKey),

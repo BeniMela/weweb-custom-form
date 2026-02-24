@@ -107,6 +107,14 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
       } catch (e) { /* invalid regex, skip */ }
     }
 
+    // Custom formula validation: field.validationFormula is resolved by WeWeb binding
+    // It should return true (valid) or false (invalid)
+    if (field.validationFormula !== null && field.validationFormula !== undefined) {
+      if (field.validationFormula === false) {
+        return field.validationMessage || t("patternInvalid");
+      }
+    }
+
     return null;
   }
 

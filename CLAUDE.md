@@ -131,6 +131,12 @@ Validation messages support custom text per field. Default messages use the sele
 
 **`validationValue`** is bindable — use a formula for dynamic validation. Example: bind `pattern` validationValue to `formData.cou_countries_id.cou_iso_code` to build a dynamic regex like `^FR`.
 
+**`validationFormula`** (bindable, returns `boolean`) — Custom validation via formula. Bind a formula that returns `true` (valid) or `false` (invalid). Evaluated after built-in validation. Uses `validationMessage` for the error text.
+```javascript
+// Example: unloco must start with country iso code
+formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_iso_code ?? "")
+```
+
 ### i18n - Language Support
 
 Property `lang` (TextSelect, bindable): `"fr"` (default) or `"en"`
