@@ -361,6 +361,7 @@ export default {
             optionsThreshold: 10,
             readOnly: false,
             hidden: false,
+            hiddenFormula: null,
             showLabel: true,
             validationFormula: null,
             multiple: false,
@@ -426,14 +427,23 @@ export default {
                 label: { en: "Hidden" },
                 type: "OnOff",
                 defaultValue: false,
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip: "When true, the field is hidden from the form. Its value stays in formData but is not validated. For conditional hiding, use Hidden Formula below.",
+                },
+                /* wwEditor:end */
+              },
+              hiddenFormula: {
+                label: { en: "Hidden (Formula)" },
+                type: "Text",
                 bindable: true,
                 /* wwEditor:start */
                 bindingValidation: {
                   type: "boolean",
-                  tooltip: "Hide this field conditionally. The value is preserved in formData but excluded from validation.",
+                  tooltip: "Bind a formula that returns true to hide this field, false to show it. Overrides the Hidden toggle.",
                 },
                 propertyHelp: {
-                  tooltip: "When true, the field is hidden from the form. Its value stays in formData but is not validated.",
+                  tooltip: "Bind a formula returning true (hidden) or false (visible). Example: !formData.cou_countries_id",
                 },
                 /* wwEditor:end */
               },
@@ -630,6 +640,7 @@ export default {
               "showLabel",
               "readOnly",
               "hidden",
+              "hiddenFormula",
               "placeholder",
               "options",
               "optionsValueKey",
