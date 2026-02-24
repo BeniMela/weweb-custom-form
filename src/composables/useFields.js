@@ -72,9 +72,7 @@ export function useFields(props, { isDisplayMode }) {
       const validationValue =
         resolveMappingFormula(props.content?.fieldsValidationValueFormula, field) ?? field?.validationValue ?? "";
       const hidden =
-        resolveMappingFormula(props.content?.fieldsHiddenFormula, field) ??
-        (field?.hiddenFormula !== null && field?.hiddenFormula !== undefined ? field.hiddenFormula : undefined) ??
-        field?.hidden ?? false;
+        resolveMappingFormula(props.content?.fieldsHiddenFormula, field) ?? field?.hidden ?? false;
       const readOnly = field?.readOnly ?? false;
       const showLabel = field?.showLabel ?? true;
 

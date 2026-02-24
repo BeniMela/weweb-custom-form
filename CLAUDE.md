@@ -75,8 +75,7 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 
 - **`readOnly` (OnOff, default `false`)** — Makes the field read-only regardless of the global `readOnly` prop. Applies `disabled` + `readonly` HTML attributes and the `ww-form-input--readonly` CSS class. The field value is preserved in `formData` but cannot be edited. Global `isReadOnly` OR `field.readOnly` makes a field readonly.
 - **`showLabel` (OnOff, default `true`)** — Controls whether the field label is rendered. When `false`, the label element is not rendered at all (no empty space). For checkboxes, also hides the inline label text.
-- **`hidden` (OnOff, default `false`)** — Statically hides the field from the form (`v-show`). The value is **preserved in `formData`** but **excluded from validation**.
-- **`hiddenFormula` (Text, bindable, default `null`)** — Conditional hiding via formula. Bind a formula returning `true` (hidden) or `false` (visible). Overrides the `hidden` toggle. Example: `!formData.cou_countries_id` hides unloco when no country selected. Priority: `fieldsHiddenFormula` (array-bound) → `hiddenFormula` (per-field) → `hidden` (static toggle).
+- **`hidden` (OnOff, bindable, default `false`)** — Hides the field from the form (`v-show`). The value is **preserved in `formData`** but **excluded from validation**. Bind a formula for conditional visibility (e.g. show unloco field only when a country is selected). Formula: `fieldsHiddenFormula`.
 
 ### Internal Variables (exposed to WeWeb workflows)
 
