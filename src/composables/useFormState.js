@@ -343,8 +343,14 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
           merged[key] = current;
         }
       }
-      formDataValues.value = merged;
-      setFormData({ ...merged });
+      // Only update if something actually changed to avoid infinite reactive loops
+      // (e.g. when hidden is bound to formData.xxx, processedFields depends on formDataValues)
+      const hasChanged = Object.keys(merged).some((k) => merged[k] !== currentData[k]) ||
+        Object.keys(currentData).some((k) => !(k in merged));
+      if (hasChanged) {
+        formDataValues.value = merged;
+        setFormData({ ...merged });
+      }
     },
     { immediate: true }
   );
