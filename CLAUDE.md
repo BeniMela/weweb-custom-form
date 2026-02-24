@@ -119,7 +119,7 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 | `validate` | none | Run validation on all fields |
 | `setFieldError` | `(fieldId, error)` | Manually set an error on a field |
 | `clearErrors` | none | Clear all validation errors |
-| `loadData` | `(data)` | Load a JSON object into the form |
+| `loadData` | `(data)` | Load a JSON object into the form — sets values AND originalValues (dirty tracking baseline) |
 | `setSearchResults` | `(fieldId, results)` | Inject search results for a `search` field (no external variable needed) |
 
 ### Validation Types
@@ -142,6 +142,19 @@ Translated strings: required, emailInvalid, minLength, maxLength, minValue, maxV
 2. **autoGenerateFields** (OnOff): Auto-create fields from JSON keys
 3. **generateFieldsButton** (editor-only): "Generate fields from data" button that flattens nested JSON into dot-path fields
 4. **defaultValue** on each field: Can be a dot-path into initialData (e.g., `user.address.city`)
+
+**Recommended pattern for Add vs Edit modes:**
+Use the `loadData` action instead of `defaultValue` when values depend on context (mode, external data, etc.).
+`loadData` sets both the field values AND the `originalValues` baseline for dirty tracking.
+```
+On page load
+  → If mode = edit : loadData(myRecord)   // pre-fills + sets dirty baseline
+  → If mode = add  : loadData({})          // empty form, no dirty baseline
+```
+For `search` fields: pass the full raw object (not just the id) so the label displays correctly:
+```javascript
+loadData({ cou_countries_id: { id: 63, cou_label_fr: "France", cou_iso_code: "FR" } })
+```
 5. **Formula properties**: `fieldsIdFormula`, `fieldsLabelFormula`, `fieldsTypeFormula`, `fieldsPlaceholderFormula`, `fieldsRequiredFormula`, `fieldsOptionsFormula`, `fieldsOptionsValueFormula`, `fieldsOptionsLabelFormula`, `fieldsOptionsThresholdFormula`, `fieldsMultipleFormula`, `fieldsSearchDebounceFormula`, `fieldsDefaultValueFormula`, `fieldsValidationValueFormula` for mapping when fields array is bound
 
 ### Select/Radio — SmartSelect Component
