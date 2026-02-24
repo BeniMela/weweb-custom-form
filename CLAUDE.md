@@ -128,6 +128,8 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 
 Validation messages support custom text per field. Default messages use the selected language (FR/EN).
 
+**`validationValue`** is bindable — use a formula for dynamic validation. Example: bind `pattern` validationValue to `formData.cou_countries_id.cou_iso_code` to build a dynamic regex like `^FR`.
+
 ### i18n - Language Support
 
 Property `lang` (TextSelect, bindable): `"fr"` (default) or `"en"`
@@ -140,7 +142,7 @@ Translated strings: required, emailInvalid, minLength, maxLength, minValue, maxV
 2. **autoGenerateFields** (OnOff): Auto-create fields from JSON keys
 3. **generateFieldsButton** (editor-only): "Generate fields from data" button that flattens nested JSON into dot-path fields
 4. **defaultValue** on each field: Can be a dot-path into initialData (e.g., `user.address.city`)
-5. **Formula properties**: `fieldsIdFormula`, `fieldsLabelFormula`, `fieldsTypeFormula`, `fieldsPlaceholderFormula`, `fieldsRequiredFormula`, `fieldsOptionsFormula`, `fieldsOptionsValueFormula`, `fieldsOptionsLabelFormula`, `fieldsOptionsThresholdFormula`, `fieldsMultipleFormula`, `fieldsSearchDebounceFormula`, `fieldsDefaultValueFormula` for mapping when fields array is bound
+5. **Formula properties**: `fieldsIdFormula`, `fieldsLabelFormula`, `fieldsTypeFormula`, `fieldsPlaceholderFormula`, `fieldsRequiredFormula`, `fieldsOptionsFormula`, `fieldsOptionsValueFormula`, `fieldsOptionsLabelFormula`, `fieldsOptionsThresholdFormula`, `fieldsMultipleFormula`, `fieldsSearchDebounceFormula`, `fieldsDefaultValueFormula`, `fieldsValidationValueFormula` for mapping when fields array is bound
 
 ### Select/Radio — SmartSelect Component
 

@@ -29,6 +29,7 @@ export default {
       "fieldsMultipleFormula",
       "fieldsSearchDebounceFormula",
       "fieldsDefaultValueFormula",
+      "fieldsValidationValueFormula",
       {
         label: "Submit & Reset",
         isCollapsible: true,
@@ -436,11 +437,16 @@ export default {
               validationValue: {
                 label: { en: "Validation Value" },
                 type: "Text",
+                bindable: true,
                 hidden: array?.item?.validationType === "none" || array?.item?.validationType === "email",
                 /* wwEditor:start */
+                bindingValidation: {
+                  type: "string",
+                  tooltip: "Dynamic validation value — bind a formula (e.g. formData.cou_countries_id.cou_iso_code to build a regex prefix)",
+                },
                 propertyHelp: {
                   tooltip:
-                    "For minLength/maxLength: number of characters. For min/max: numeric value. For pattern: regex string.",
+                    "For minLength/maxLength: number of characters. For min/max: numeric value. For pattern: regex string. Bindable for dynamic validation.",
                 },
                 /* wwEditor:end */
               },
@@ -851,6 +857,25 @@ export default {
       defaultValue: {
         type: "f",
         code: "context.mapping?.['defaultValue']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.fields) ||
+        !content.fields?.length ||
+        !boundProps.fields,
+    },
+    fieldsValidationValueFormula: {
+      label: { en: "Validation Value Field" },
+      type: "Formula",
+      section: "settings",
+      options: (content) => ({
+        template:
+          Array.isArray(content.fields) && content.fields.length > 0
+            ? content.fields[0]
+            : null,
+      }),
+      defaultValue: {
+        type: "f",
+        code: "context.mapping?.['validationValue']",
       },
       hidden: (content, sidepanelContent, boundProps) =>
         !Array.isArray(content.fields) ||
