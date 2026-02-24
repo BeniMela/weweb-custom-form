@@ -121,7 +121,7 @@
           <SearchSelect
             v-else-if="field.type === 'search'"
             :model-value="getSearchModelValue(field)"
-            :options="searchOptionsMap[field.id] ?? []"
+            :options="getSearchOptions(field)"
             :debounce="field.searchDebounce"
             :placeholder="field.placeholder || t('selectPlaceholder')"
             :disabled="isReadOnly || field.readOnly"
@@ -384,7 +384,6 @@ export default {
       parseOptions,
       getOptionLabel,
       formatDisplayValue,
-      searchOptionsMap,
       getSearchOptions,
       getSearchModelValue,
       getSearchDisplayLabel,
