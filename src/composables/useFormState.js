@@ -73,6 +73,7 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
   function validateField(fieldId) {
     const field = processedFields.value.find((f) => f.id === fieldId);
     if (!field) return null;
+    if (field.hidden) return null;
 
     const value = formDataValues.value[fieldId];
 

@@ -6,6 +6,7 @@
         <div
           v-for="field in processedFields"
           :key="field.id"
+          v-show="!field.hidden"
           class="ww-form-field"
           :class="[`ww-form-field--${field.width || 'full'}`, { 'ww-form-field--section': field.type === 'section' }]"
         >
@@ -43,6 +44,7 @@
         <div
           v-for="field in processedFields"
           :key="field.id"
+          v-show="!field.hidden"
           class="ww-form-field"
           :class="[
             `ww-form-field--${field.width || 'full'}`,

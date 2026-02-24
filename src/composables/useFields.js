@@ -71,6 +71,8 @@ export function useFields(props, { isDisplayMode }) {
         resolveMappingFormula(props.content?.fieldsDefaultValueFormula, field) ?? field?.defaultValue ?? "";
       const validationValue =
         resolveMappingFormula(props.content?.fieldsValidationValueFormula, field) ?? field?.validationValue ?? "";
+      const hidden =
+        resolveMappingFormula(props.content?.fieldsHiddenFormula, field) ?? field?.hidden ?? false;
       const readOnly = field?.readOnly ?? false;
       const showLabel = field?.showLabel ?? true;
 
@@ -80,6 +82,7 @@ export function useFields(props, { isDisplayMode }) {
         type: String(type),
         placeholder: String(placeholder),
         required: Boolean(required),
+        hidden: Boolean(hidden),
         readOnly: Boolean(readOnly),
         showLabel: Boolean(showLabel),
         validationType: field?.validationType ?? "none",

@@ -71,10 +71,11 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 
 **`section`** — Visual separator with optional title and a horizontal line. No value in `formData`. Set `label` to the section title (e.g. "Localisation"), leave empty for a plain divider. Width `full` spans the whole row.
 
-### Per-field Read Only & Show Label
+### Per-field Read Only, Show Label & Hidden
 
 - **`readOnly` (OnOff, default `false`)** — Makes the field read-only regardless of the global `readOnly` prop. Applies `disabled` + `readonly` HTML attributes and the `ww-form-input--readonly` CSS class. The field value is preserved in `formData` but cannot be edited. Global `isReadOnly` OR `field.readOnly` makes a field readonly.
 - **`showLabel` (OnOff, default `true`)** — Controls whether the field label is rendered. When `false`, the label element is not rendered at all (no empty space). For checkboxes, also hides the inline label text.
+- **`hidden` (OnOff, bindable, default `false`)** — Hides the field from the form (`v-show`). The value is **preserved in `formData`** but **excluded from validation**. Bind a formula for conditional visibility (e.g. show unloco field only when a country is selected). Formula: `fieldsHiddenFormula`.
 
 ### Internal Variables (exposed to WeWeb workflows)
 

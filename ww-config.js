@@ -30,6 +30,7 @@ export default {
       "fieldsSearchDebounceFormula",
       "fieldsDefaultValueFormula",
       "fieldsValidationValueFormula",
+      "fieldsHiddenFormula",
       {
         label: "Submit & Reset",
         isCollapsible: true,
@@ -359,6 +360,7 @@ export default {
             optionsLabelKey: "label",
             optionsThreshold: 10,
             readOnly: false,
+            hidden: false,
             showLabel: true,
             multiple: false,
             searchDebounce: 300,
@@ -418,6 +420,21 @@ export default {
                 defaultValue: false,
                 hidden: array?.item?.type === "section",
                 bindable: true,
+              },
+              hidden: {
+                label: { en: "Hidden" },
+                type: "OnOff",
+                defaultValue: false,
+                bindable: true,
+                /* wwEditor:start */
+                bindingValidation: {
+                  type: "boolean",
+                  tooltip: "Hide this field conditionally. The value is preserved in formData but excluded from validation.",
+                },
+                propertyHelp: {
+                  tooltip: "When true, the field is hidden from the form. Its value stays in formData but is not validated.",
+                },
+                /* wwEditor:end */
               },
               validationType: {
                 label: { en: "Validation" },
@@ -597,6 +614,7 @@ export default {
               "type",
               "showLabel",
               "readOnly",
+              "hidden",
               "placeholder",
               "options",
               "optionsValueKey",
@@ -876,6 +894,25 @@ export default {
       defaultValue: {
         type: "f",
         code: "context.mapping?.['validationValue']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.fields) ||
+        !content.fields?.length ||
+        !boundProps.fields,
+    },
+    fieldsHiddenFormula: {
+      label: { en: "Hidden Field" },
+      type: "Formula",
+      section: "settings",
+      options: (content) => ({
+        template:
+          Array.isArray(content.fields) && content.fields.length > 0
+            ? content.fields[0]
+            : null,
+      }),
+      defaultValue: {
+        type: "f",
+        code: "context.mapping?.['hidden']",
       },
       hidden: (content, sidepanelContent, boundProps) =>
         !Array.isArray(content.fields) ||
