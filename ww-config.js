@@ -1007,6 +1007,7 @@ export default {
           type: "Object",
           defaultValue: {
             label: "",
+            mode: "separator",
             fields: "",
           },
           options: {
@@ -1014,6 +1015,25 @@ export default {
               label: {
                 label: { en: "Section title" },
                 type: "Text",
+                bindable: true,
+                /* wwEditor:start */
+                bindingValidation: {
+                  type: "string",
+                  tooltip: "Section title — supports binding for i18n",
+                },
+                /* wwEditor:end */
+              },
+              mode: {
+                label: { en: "Display mode" },
+                type: "TextSelect",
+                defaultValue: "separator",
+                options: {
+                  options: [
+                    { value: "separator", label: "Separator (title + line)" },
+                    { value: "card", label: "Card (bordered background)" },
+                    { value: "none", label: "None (fields only)" },
+                  ],
+                },
               },
               fields: {
                 label: { en: "Field IDs (comma-separated)" },
@@ -1025,7 +1045,7 @@ export default {
                 /* wwEditor:end */
               },
             },
-            propertiesOrder: ["label", "fields"],
+            propertiesOrder: ["label", "mode", "fields"],
           },
         },
       },

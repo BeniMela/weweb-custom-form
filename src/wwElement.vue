@@ -6,15 +6,23 @@
       <!-- Fields grouped by section — each block has its own independent grid -->
       <template v-for="(block, bi) in fieldBlocks" :key="`block-${bi}`">
 
-        <!-- Section header (null = fields before the first section) -->
-        <div v-if="block.section" v-show="!block.section.hidden" class="ww-form-section-block">
-          <div class="ww-form-section">
+        <!-- Block wrapper: always a section-block div; mode class drives visual style -->
+        <div
+          v-show="!block.section?.hidden"
+          class="ww-form-section-block"
+          :class="block.section ? `ww-form-section-block--${block.section.mode || 'separator'}` : ''"
+        >
+          <!-- Section header: separator mode shows title + line; card mode shows title only; none hides header -->
+          <div
+            v-if="block.section && block.section.mode !== 'none'"
+            class="ww-form-section"
+            :class="{ 'ww-form-section--card': block.section.mode === 'card' }"
+          >
             <span v-if="block.section.label" class="ww-form-section-title">{{ block.section.label }}</span>
           </div>
-        </div>
 
-        <!-- Fields grid for this block -->
-        <div class="ww-form-fields" :class="formClasses">
+          <!-- Fields grid for this block -->
+          <div class="ww-form-fields" :class="formClasses">
           <template v-for="field in block.fields" :key="field.id">
           <div
             v-show="!field.hidden"
@@ -178,7 +186,8 @@
             <div class="ww-form-error ww-form-error--group">{{ group.message }}</div>
           </div>
           </template>
-        </div>
+          </div><!-- end .ww-form-fields -->
+        </div><!-- end .ww-form-section-block -->
 
       </template>
 
@@ -267,7 +276,7 @@ export default {
         return sections.map((section) => {
           const fieldIds = String(section.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
           return {
-            section: { label: section.label ?? "", hidden: false },
+            section: { label: section.label ?? "", mode: section.mode ?? "separator", hidden: false },
             fields: fieldIds.map((id) => fieldMap[id]).filter(Boolean),
           };
         });
@@ -279,7 +288,7 @@ export default {
       for (const field of processedFields.value) {
         if (field.type === "section") {
           blocks.push(current);
-          current = { section: field, fields: [] };
+          current = { section: { ...field, mode: "separator" }, fields: [] };
         } else {
           current.fields.push(field);
         }

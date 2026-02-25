@@ -235,8 +235,15 @@
 }
 
 // ==========================================
-// Section separator
+// Section blocks
 // ==========================================
+
+// The parent form stacks section blocks with a gap
+.ww-dynamic-form form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ww-form-gap, 16px);
+}
 
 // Wraps the section header + its fields grid — stacks vertically
 .ww-form-section-block {
@@ -244,8 +251,17 @@
   display: flex;
   flex-direction: column;
   gap: var(--ww-form-gap, 16px);
+
+  // Card mode: bordered card with background
+  &--card {
+    background-color: var(--ww-form-card-bg, #f9fafb);
+    border: 1px solid var(--ww-form-input-border, #d1d5db);
+    border-radius: var(--ww-form-input-radius, 8px);
+    padding: var(--ww-form-gap, 16px);
+  }
 }
 
+// Separator header: title + horizontal line
 .ww-form-section {
   display: flex;
   align-items: center;
@@ -258,6 +274,15 @@
     flex: 1;
     height: 1px;
     background-color: var(--ww-form-input-border, #d1d5db);
+  }
+
+  // Card header: no line, lighter title
+  &--card {
+    padding-top: 0;
+
+    &::after {
+      display: none;
+    }
   }
 }
 
@@ -276,7 +301,6 @@
 .ww-form-actions {
   display: flex;
   gap: 8px;
-  margin-top: var(--ww-form-gap, 16px);
   justify-content: flex-end;
 }
 

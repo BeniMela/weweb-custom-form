@@ -67,7 +67,7 @@ Editor-only code (`generateFields`, `isEditing`) stays in `wwElement.vue` inside
 
 Backward compatible: `"form"` and `undefined` map to Edit mode. `display` mode simply sets `isReadOnly = true` internally — no separate template. Checked checkboxes render with a green accent in readonly mode (`.ww-form-checkbox-label--readonly`).
 
-**Section rendering:** `fieldBlocks` computed — `[{ section: { label, hidden }, fields: field[] }]` — drives the template. Each block renders a `.ww-form-section-block` (title + independent `.ww-form-fields` grid), isolating column alignment per section.
+**Section rendering:** `fieldBlocks` computed — `[{ section: { label, mode, hidden }, fields: field[] }]` — drives the template. Each block is wrapped in `.ww-form-section-block.ww-form-section-block--{mode}`. The `<form>` element is a flex-column with gap, so block-to-block spacing comes from the flex gap (no `margin-top` needed on actions).
 
 **Priority:** If `props.content.sections` is a non-empty array, it is used to build `fieldBlocks` (field IDs resolved from `processedFields` via a `fieldMap`). If `sections` is empty/absent, falls back to extracting `type === "section"` entries from `processedFields` (legacy behaviour).
 
@@ -147,14 +147,19 @@ formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_i
 **Per-field `validateOnBlur`** (OnOff, default `true`) — Re-validate this field on blur.
 
 **`sections`** (Array) — Defines visual groupings of fields. Each section has:
-- `label` (Text) — section title displayed as a bold header with a horizontal rule
+- `label` (Text, **bindable**) — section title; supports WeWeb binding for i18n
+- `mode` (TextSelect, default `"separator"`) — visual style:
+  - `separator` — bold title + horizontal rule (`.ww-form-section`)
+  - `card` — fields in a bordered card with background (`.ww-form-section-block--card`); title shown without the rule
+  - `none` — no visual header; fields only
 - `fields` (Text) — comma-separated field IDs: `"adr_street,adr_street2"`
 
-Fields not assigned to any section are **not rendered**. Sections each get their own independent flex grid, so `half`/`third` widths within a section align only with each other.
-```
+Fields not assigned to any section are **not rendered**. Each section gets its own independent flex grid so `half`/`third` widths align only within their section.
+```javascript
 sections: [
-  { label: "Adresse", fields: "adr_street,adr_street2" },
-  { label: "Localisation", fields: "adr_zip,adr_city,adr_country" },
+  { label: "Adresse", mode: "separator", fields: "adr_street,adr_street2" },
+  { label: "Carte", mode: "card", fields: "adr_zip,adr_city" },
+  { label: "", mode: "none", fields: "adr_country" },
 ]
 ```
 If `sections` is empty or absent, falls back to `type === "section"` entries in `fields` (legacy).
