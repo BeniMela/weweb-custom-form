@@ -26,7 +26,7 @@
                 fontWeight: block.section.fontWeight || undefined,
               }"
             >
-              <span v-if="block.section.icon" class="material-icons ww-form-section-icon">{{ block.section.icon }}</span>
+              <span v-if="block.section.icon" class="material-symbols-rounded ww-form-section-icon">{{ block.section.icon }}</span>
               <span v-if="block.section.showLabel && block.section.label">{{ block.section.label }}</span>
             </span>
           </div>
