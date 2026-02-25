@@ -44,9 +44,8 @@
     <!-- FORM MODE -->
     <form v-else @submit.prevent="handleSubmit" novalidate>
       <div class="ww-form-fields" :class="formClasses">
+        <template v-for="field in processedFields" :key="field.id">
         <div
-          v-for="field in processedFields"
-          :key="field.id"
           v-show="!field.hidden"
           class="ww-form-field"
           :class="[
@@ -208,15 +207,17 @@
           </template>
         </div>
 
-        <!-- Group error messages — standalone grid items, one per failing group -->
+        <!-- Group error messages — inserted after the last field of each group -->
         <div
-          v-for="(group, gi) in groupErrors"
-          :key="`ge-${gi}`"
+          v-for="(group, gi) in groupErrorsAfterField(field.id)"
+          :key="`ge-${field.id}-${gi}`"
           class="ww-form-field ww-form-error--group-row"
           :class="`ww-form-field--${group.width || 'full'}`"
         >
           <div class="ww-form-error ww-form-error--group">{{ group.message }}</div>
         </div>
+        </template>
+
       </div>
 
       <!-- Buttons -->
@@ -280,6 +281,18 @@ export default {
 
     // Set of field IDs that are part of a failing group (for red border)
     const groupErrorFieldIds = computed(() => form.getGroupErrorFieldIds());
+
+    // Returns group errors that should be rendered after a given fieldId
+    // (i.e. groups where fieldId is the last visible field of the group)
+    function groupErrorsAfterField(fieldId) {
+      return form.groupErrors.value.filter((group) => {
+        const visibleFieldIds = group.fields.filter((id) => {
+          const f = processedFields.value.find((pf) => pf.id === id);
+          return f && !f.hidden;
+        });
+        return visibleFieldIds[visibleFieldIds.length - 1] === fieldId;
+      });
+    }
 
     // Map a raw item to { value, label } using field's searchValueKey and searchLabelTemplate
     function mapSearchItem(item, field) {
@@ -405,6 +418,7 @@ export default {
       errors: form.errors,
       groupErrors: form.groupErrors,
       groupErrorFieldIds,
+      groupErrorsAfterField,
       // Computed
       processedFields,
       rootStyle,

@@ -149,7 +149,9 @@ formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_i
 - `validateOnChange` (OnOff, default `false`) — re-evaluate when any listed field changes
 - `validateOnBlur` (OnOff, default `true`) — re-evaluate when any listed field blurs
 
-Group errors are stored separately from field errors in `groupErrors` ref. Fields in a failing group get a red border (`ww-form-input--error`) but **no repeated text**. The error message is displayed **once** as a **standalone grid item** (`.ww-form-error--group-row`) rendered after all the form fields, with a `⚠` icon and a left-bordered banner style (`ww-form-error--group`). The `width` property controls its column span in the grid. Always evaluated on submit.
+Group errors are stored separately from field errors in `groupErrors` ref. Fields in a failing group get a red border (`ww-form-input--error`) but **no repeated text**. The error message is displayed **once** as a **standalone grid item** (`.ww-form-error--group-row`) inserted **after the last visible field of the group** (not at the end of the form). The `width` property controls its column span in the grid. Uses a `⚠` icon and a left-bordered banner style (`ww-form-error--group`). Always evaluated on submit.
+
+**Rendering:** The fields loop uses a `<template v-for>` wrapper so each field can be followed by its group error rows as siblings in the CSS grid. `groupErrorsAfterField(fieldId)` filters `groupErrors` to those whose last visible field matches `fieldId`.
 ```
 // Example: at least one address type must be checked
 formula: formData.adr_is_billing || formData.adr_is_delivery || formData.adr_is_pickup
