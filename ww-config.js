@@ -44,7 +44,7 @@ export default {
       {
         label: "Validation",
         isCollapsible: true,
-        properties: ["validateOnBlur", "validateOnChange"],
+        properties: ["validateOnBlur", "validateOnChange", "validationGroups"],
       },
     ],
     customStylePropertiesOrder: [
@@ -1020,6 +1020,70 @@ export default {
       bindingValidation: {
         type: "boolean",
         tooltip: "Validate fields as the user types",
+      },
+      /* wwEditor:end */
+    },
+
+    validationGroups: {
+      label: { en: "Validation Groups" },
+      type: "Array",
+      section: "settings",
+      defaultValue: [],
+      options: {
+        expandable: true,
+        getItemLabel(item, index) {
+          return item?.message?.length ? item.message : `Group ${index + 1}`;
+        },
+        item: {
+          type: "Object",
+          defaultValue: {
+            formula: null,
+            message: "",
+            fields: "",
+          },
+          options: {
+            item: {
+              formula: {
+                label: { en: "Formula (valid = true)" },
+                type: "Text",
+                bindable: true,
+                /* wwEditor:start */
+                bindingValidation: {
+                  type: "boolean",
+                  tooltip: "Bind a formula that returns true if the group is valid, false otherwise.",
+                },
+                propertyHelp: {
+                  tooltip: "Formula returning true (valid) or false (invalid). Example: formData.adr_is_billing || formData.adr_is_delivery || formData.adr_is_pickup",
+                },
+                /* wwEditor:end */
+              },
+              message: {
+                label: { en: "Error Message" },
+                type: "Text",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip: "Error message displayed on all fields in this group when the formula returns false.",
+                },
+                /* wwEditor:end */
+              },
+              fields: {
+                label: { en: "Field IDs (comma-separated)" },
+                type: "Text",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip: 'Comma-separated list of field IDs to show the error on. Example: "adr_is_billing,adr_is_delivery,adr_is_pickup"',
+                },
+                /* wwEditor:end */
+              },
+            },
+            propertiesOrder: ["formula", "message", "fields"],
+          },
+        },
+        movable: true,
+      },
+      /* wwEditor:start */
+      propertyHelp: {
+        tooltip: "Define cross-field validation rules. Each group has a formula (true = valid), an error message, and a list of field IDs to highlight.",
       },
       /* wwEditor:end */
     },

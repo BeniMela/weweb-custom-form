@@ -137,6 +137,19 @@ Validation messages support custom text per field. Default messages use the sele
 formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_iso_code ?? "")
 ```
 
+**`validationGroups`** (Array) — Cross-field validation rules. Each group has:
+- `formula` (Text, bindable) — returns `true` (valid) or `false` (invalid)
+- `message` (Text) — error message shown on all listed fields
+- `fields` (Text) — comma-separated field IDs: `"adr_is_billing,adr_is_delivery,adr_is_pickup"`
+
+When `formula === false`, the error message is set on every field in `fields`. Group errors are re-evaluated on every `updateFieldValidation` call and cleared automatically when `formula` becomes `true`. Evaluated in both `validateAll` (submit) and incremental validation (change/blur).
+```
+// Example: at least one address type must be checked
+formula: formData.adr_is_billing || formData.adr_is_delivery || formData.adr_is_pickup
+message: "Au moins un type d'adresse doit être sélectionné"
+fields:  "adr_is_billing,adr_is_delivery,adr_is_pickup"
+```
+
 ### i18n - Language Support
 
 Property `lang` (TextSelect, bindable): `"fr"` (default) or `"en"`

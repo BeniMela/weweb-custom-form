@@ -118,6 +118,20 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
     return null;
   }
 
+  function applyGroupValidation(newErrors) {
+    const groups = props.content?.validationGroups;
+    if (!Array.isArray(groups)) return;
+    for (const group of groups) {
+      if (group.formula === false) {
+        const fieldIds = String(group.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+        const msg = group.message || t("patternInvalid");
+        for (const fieldId of fieldIds) {
+          if (!newErrors[fieldId]) newErrors[fieldId] = msg;
+        }
+      }
+    }
+  }
+
   function validateAll() {
     const newErrors = {};
     let allValid = true;
@@ -129,6 +143,9 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
         allValid = false;
       }
     }
+
+    applyGroupValidation(newErrors);
+    allValid = Object.keys(newErrors).length === 0;
 
     errors.value = newErrors;
     setErrors(newErrors);
@@ -154,6 +171,19 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
       newErrors[fieldId] = error;
     } else {
       delete newErrors[fieldId];
+    }
+    // Re-apply group validation: clear stale group errors then re-add active ones
+    const groups = props.content?.validationGroups;
+    if (Array.isArray(groups)) {
+      // Clear all group-managed field errors first
+      for (const group of groups) {
+        const fieldIds = String(group.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+        for (const id of fieldIds) {
+          delete newErrors[id];
+        }
+      }
+      // Re-apply current group state
+      applyGroupValidation(newErrors);
     }
     errors.value = newErrors;
     setErrors(newErrors);
@@ -209,13 +239,6 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
 
     if (props.content?.validateOnChange) {
       updateFieldValidation(fieldId);
-      // Re-validate other fields that have a validationFormula, since their
-      // result may depend on the value that just changed (e.g. checkbox group)
-      for (const field of processedFields.value) {
-        if (field.id !== fieldId && field.validationFormula !== null && field.validationFormula !== undefined) {
-          updateFieldValidation(field.id);
-        }
-      }
     }
   }
 
@@ -238,12 +261,6 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
 
     if (props.content?.validateOnBlur !== false && !isReadOnly.value) {
       updateFieldValidation(fieldId);
-      // Re-validate other fields with validationFormula (may depend on this field's value)
-      for (const field of processedFields.value) {
-        if (field.id !== fieldId && field.validationFormula !== null && field.validationFormula !== undefined) {
-          updateFieldValidation(field.id);
-        }
-      }
     }
   }
 
