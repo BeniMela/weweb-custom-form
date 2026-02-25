@@ -287,11 +287,20 @@
 }
 
 .ww-form-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: var(--ww-form-label-font-size, 14px);
   font-weight: 600;
   color: var(--ww-form-label-color, #374151);
   white-space: nowrap;
   flex-shrink: 0;
+}
+
+.ww-form-section-icon {
+  font-size: 1.1em; // slightly larger than the text to align optically
+  line-height: 1;
+  vertical-align: middle;
 }
 
 

@@ -148,6 +148,10 @@ formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_i
 
 **`sections`** (Array) — Defines visual groupings of fields. Each section has:
 - `label` (Text, **bindable**) — section title; supports WeWeb binding for i18n
+- `showLabel` (OnOff, default `true`) — show/hide the label text; the separator line or card border remains visible
+- `icon` (Text) — Material Icons ligature name (e.g. `home`, `location_on`); rendered as `<span class="material-icons">` which uses the font already loaded by WeWeb
+- `fontSize` (Text) — CSS font-size for the section title (e.g. `14px`); empty = use default
+- `fontWeight` (TextSelect, default `"600"`) — `400 / 500 / 600 / 700`
 - `mode` (TextSelect, default `"separator"`) — visual style:
   - `separator` — bold title + horizontal rule (`.ww-form-section`)
   - `card` — fields in a bordered card with background (`.ww-form-section-block--card`); title shown without the rule
@@ -157,7 +161,7 @@ formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_i
 Fields not assigned to any section are **not rendered**. Each section gets its own independent flex grid so `half`/`third` widths align only within their section.
 ```javascript
 sections: [
-  { label: "Adresse", mode: "separator", fields: "adr_street,adr_street2" },
+  { label: "Adresse", showLabel: true, icon: "home", fontSize: "14px", fontWeight: "600", mode: "separator", fields: "adr_street,adr_street2" },
   { label: "Carte", mode: "card", fields: "adr_zip,adr_city" },
   { label: "", mode: "none", fields: "adr_country" },
 ]

@@ -1007,6 +1007,10 @@ export default {
           type: "Object",
           defaultValue: {
             label: "",
+            showLabel: true,
+            icon: "",
+            fontSize: "",
+            fontWeight: "600",
             mode: "separator",
             fields: "",
           },
@@ -1022,6 +1026,42 @@ export default {
                   tooltip: "Section title — supports binding for i18n",
                 },
                 /* wwEditor:end */
+              },
+              showLabel: {
+                label: { en: "Show label" },
+                type: "OnOff",
+                defaultValue: true,
+              },
+              icon: {
+                label: { en: "Icon (Material Icons name)" },
+                type: "Text",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip: 'Material Icons ligature name. Example: "home", "person", "location_on". Leave empty for no icon.',
+                },
+                /* wwEditor:end */
+              },
+              fontSize: {
+                label: { en: "Font size" },
+                type: "Text",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip: 'CSS font-size for the section title. Example: "14px", "1rem". Leave empty to use default.',
+                },
+                /* wwEditor:end */
+              },
+              fontWeight: {
+                label: { en: "Font weight" },
+                type: "TextSelect",
+                defaultValue: "600",
+                options: {
+                  options: [
+                    { value: "400", label: "Regular (400)" },
+                    { value: "500", label: "Medium (500)" },
+                    { value: "600", label: "Semi-bold (600)" },
+                    { value: "700", label: "Bold (700)" },
+                  ],
+                },
               },
               mode: {
                 label: { en: "Display mode" },
@@ -1045,7 +1085,7 @@ export default {
                 /* wwEditor:end */
               },
             },
-            propertiesOrder: ["label", "mode", "fields"],
+            propertiesOrder: ["label", "showLabel", "icon", "fontSize", "fontWeight", "mode", "fields"],
           },
         },
       },

@@ -18,7 +18,17 @@
             class="ww-form-section"
             :class="{ 'ww-form-section--card': block.section.mode === 'card' }"
           >
-            <span v-if="block.section.label" class="ww-form-section-title">{{ block.section.label }}</span>
+            <span
+              v-if="block.section.icon || (block.section.showLabel && block.section.label)"
+              class="ww-form-section-title"
+              :style="{
+                fontSize: block.section.fontSize || undefined,
+                fontWeight: block.section.fontWeight || undefined,
+              }"
+            >
+              <span v-if="block.section.icon" class="material-icons ww-form-section-icon">{{ block.section.icon }}</span>
+              <span v-if="block.section.showLabel && block.section.label">{{ block.section.label }}</span>
+            </span>
           </div>
 
           <!-- Fields grid for this block -->
@@ -276,7 +286,15 @@ export default {
         return sections.map((section) => {
           const fieldIds = String(section.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
           return {
-            section: { label: section.label ?? "", mode: section.mode ?? "separator", hidden: false },
+            section: {
+              label: section.label ?? "",
+              showLabel: section.showLabel !== false,
+              icon: section.icon ?? "",
+              fontSize: section.fontSize ?? "",
+              fontWeight: section.fontWeight ?? "600",
+              mode: section.mode ?? "separator",
+              hidden: false,
+            },
             fields: fieldIds.map((id) => fieldMap[id]).filter(Boolean),
           };
         });
