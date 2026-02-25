@@ -67,11 +67,13 @@ Editor-only code (`generateFields`, `isEditing`) stays in `wwElement.vue` inside
 
 Backward compatible: `"form"` and `undefined` map to Edit mode. `display` mode simply sets `isReadOnly = true` internally — no separate template. Checked checkboxes render with a green accent in readonly mode (`.ww-form-checkbox-label--readonly`).
 
+**Section rendering:** `processedFields` is split into `fieldBlocks` (computed) — `[{ section: field|null, fields: field[] }]`. Each block renders a `.ww-form-section-block` (section header + its own `.ww-form-fields` grid). Fields before the first `section` go into a block with `section: null`. This isolates column alignment per section.
+
 ### Field Types
 
 `text`, `email`, `password`, `number`, `phone`, `url`, `date`, `textarea`, `select`, `checkbox`, `radio`, `search`, `section`
 
-**`section`** — Visual separator with optional title and a horizontal line. No value in `formData`. Set `label` to the section title (e.g. "Localisation"), leave empty for a plain divider. Width `full` spans the whole row.
+**`section`** — Visual group delimiter with optional title and a horizontal rule. No value in `formData`. Each `section` entry in `fields` starts a new independent flex grid (`.ww-form-section-block`), so `half`/`third` fields in one section never align with those of another. Set `label` to the section title (e.g. "Localisation"), leave empty for a plain divider.
 
 **`phone`** — International phone input with country selector. Uses `libphonenumber-js/min` for parsing, formatting and validation. See "Phone — International Phone Type" section below.
 

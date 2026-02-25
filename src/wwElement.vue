@@ -2,182 +2,185 @@
   <div class="ww-dynamic-form" :style="rootStyle">
     <!-- FORM MODE (also handles display mode via isReadOnly) -->
     <form @submit.prevent="handleSubmit" novalidate>
-      <div class="ww-form-fields" :class="formClasses">
-        <template v-for="field in processedFields" :key="field.id">
-        <div
-          v-show="!field.hidden"
-          class="ww-form-field"
-          :class="[
-            `ww-form-field--${field.width || 'full'}`,
-            { 'ww-form-field--section': field.type === 'section' },
-            { 'ww-form-field--error': errors[field.id] || groupErrorFieldIds.has(field.id) },
-            { 'ww-form-field--dirty': isFieldDirty(field.id) },
-          ]"
-        >
-          <!-- Section separator -->
-          <template v-if="field.type === 'section'">
-            <div class="ww-form-section">
-              <span v-if="field.label" class="ww-form-section-title">{{ field.label }}</span>
-            </div>
-          </template>
 
-          <template v-else>
-          <!-- Label -->
-          <label v-if="field.type !== 'checkbox' && field.showLabel !== false" :for="`${uid}-${field.id}`" class="ww-form-label">
-            {{ field.label || field.id }}
-            <span v-if="field.required && !(isReadOnly || field.readOnly)" class="ww-form-required">*</span>
-          </label>
+      <!-- Fields grouped by section — each block has its own independent grid -->
+      <template v-for="(block, bi) in fieldBlocks" :key="`block-${bi}`">
 
-          <!-- Text / Email / Password / Tel / URL / Number / Date -->
-          <input
-            v-if="isInputType(field.type)"
-            :id="`${uid}-${field.id}`"
-            :type="field.type"
-            :placeholder="field.placeholder || ''"
-            :required="field.required"
-            :value="formDataValues[field.id]"
-            :readonly="isReadOnly || field.readOnly"
-            :disabled="isReadOnly || field.readOnly"
-            class="ww-form-input"
-            :class="{ 'ww-form-input--readonly': isReadOnly || field.readOnly, 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
-            @input="handleInput(field.id, $event.target.value)"
-            @focus="handleFocus(field.id)"
-            @blur="handleBlur(field.id)"
-          />
+        <!-- Section header (null = fields before the first section) -->
+        <div v-if="block.section" v-show="!block.section.hidden" class="ww-form-section-block">
+          <div class="ww-form-section">
+            <span v-if="block.section.label" class="ww-form-section-title">{{ block.section.label }}</span>
+          </div>
+        </div>
 
-          <!-- Textarea -->
-          <textarea
-            v-else-if="field.type === 'textarea'"
-            :id="`${uid}-${field.id}`"
-            :placeholder="field.placeholder || ''"
-            :required="field.required"
-            :value="formDataValues[field.id]"
-            :readonly="isReadOnly || field.readOnly"
-            :disabled="isReadOnly || field.readOnly"
-            class="ww-form-input ww-form-textarea"
-            :class="{ 'ww-form-input--readonly': isReadOnly || field.readOnly, 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
-            rows="4"
-            @input="handleInput(field.id, $event.target.value)"
-            @focus="handleFocus(field.id)"
-            @blur="handleBlur(field.id)"
-          ></textarea>
-
-          <!-- Select -->
-          <SmartSelect
-            v-else-if="field.type === 'select'"
-            :model-value="formDataValues[field.id]"
-            :options="parseOptions(field.options, field.optionsValueKey, field.optionsLabelKey)"
-            :threshold="field.optionsThreshold"
-            :multiple="field.multiple"
-            :placeholder="field.placeholder || t('selectPlaceholder')"
-            :disabled="isReadOnly || field.readOnly"
-            :readonly="isReadOnly || field.readOnly"
-            :no-results-text="t('noResults')"
-            :selected-count-label="t('selected')"
-            :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
-            @update:model-value="handleInput(field.id, $event)"
-            @focus="handleFocus(field.id)"
-            @blur="handleBlur(field.id)"
-          />
-
-          <!-- Search (external) -->
-          <SearchSelect
-            v-else-if="field.type === 'search'"
-            :model-value="getSearchModelValue(field)"
-            :options="getSearchOptions(field)"
-            :debounce="field.searchDebounce"
-            :placeholder="field.placeholder || t('selectPlaceholder')"
-            :disabled="isReadOnly || field.readOnly"
-            :readonly="isReadOnly || field.readOnly"
-            :no-results-text="t('noResults')"
-            :loading-text="t('loading')"
-            :input-class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
-            @update:model-value="handleSearchSelect(field, $event)"
-            @search="handleSearchQuery(field.id, $event)"
-            @focus="handleFocus(field.id)"
-            @blur="handleBlur(field.id)"
-          />
-
-          <!-- Checkbox -->
-          <label
-            v-else-if="field.type === 'checkbox'"
-            class="ww-form-checkbox-label"
-            :class="{ 'ww-form-checkbox-label--dirty': isFieldDirty(field.id), 'ww-form-checkbox-label--error': errors[field.id] || groupErrorFieldIds.has(field.id), 'ww-form-checkbox-label--readonly': isReadOnly || field.readOnly }"
-            :for="`${uid}-${field.id}`"
+        <!-- Fields grid for this block -->
+        <div class="ww-form-fields" :class="formClasses">
+          <template v-for="field in block.fields" :key="field.id">
+          <div
+            v-show="!field.hidden"
+            class="ww-form-field"
+            :class="[
+              `ww-form-field--${field.width || 'full'}`,
+              { 'ww-form-field--error': errors[field.id] || groupErrorFieldIds.has(field.id) },
+              { 'ww-form-field--dirty': isFieldDirty(field.id) },
+            ]"
           >
+            <!-- Label -->
+            <label v-if="field.type !== 'checkbox' && field.showLabel !== false" :for="`${uid}-${field.id}`" class="ww-form-label">
+              {{ field.label || field.id }}
+              <span v-if="field.required && !(isReadOnly || field.readOnly)" class="ww-form-required">*</span>
+            </label>
+
+            <!-- Text / Email / Password / URL / Number / Date -->
             <input
+              v-if="isInputType(field.type)"
               :id="`${uid}-${field.id}`"
-              type="checkbox"
+              :type="field.type"
+              :placeholder="field.placeholder || ''"
               :required="field.required"
-              :checked="formDataValues[field.id] === true || formDataValues[field.id] === 'true'"
+              :value="formDataValues[field.id]"
+              :readonly="isReadOnly || field.readOnly"
               :disabled="isReadOnly || field.readOnly"
-              class="ww-form-checkbox"
-              @change="handleInput(field.id, $event.target.checked)"
+              class="ww-form-input"
+              :class="{ 'ww-form-input--readonly': isReadOnly || field.readOnly, 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
+              @input="handleInput(field.id, $event.target.value)"
               @focus="handleFocus(field.id)"
               @blur="handleBlur(field.id)"
             />
-            <span v-if="field.showLabel !== false">{{ field.label || field.id }}</span>
-            <span v-if="field.required && !(isReadOnly || field.readOnly)" class="ww-form-required">*</span>
-          </label>
 
-          <!-- Radio -->
-          <SmartSelect
-            v-else-if="field.type === 'radio'"
-            :model-value="formDataValues[field.id]"
-            :options="parseOptions(field.options, field.optionsValueKey, field.optionsLabelKey)"
-            :threshold="field.optionsThreshold"
-            :placeholder="field.placeholder || ''"
-            :disabled="isReadOnly || field.readOnly"
-            :readonly="isReadOnly || field.readOnly"
-            :no-results-text="t('noResults')"
-            :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
-            @update:model-value="handleInput(field.id, $event)"
-            @focus="handleFocus(field.id)"
-            @blur="handleBlur(field.id)"
-          />
+            <!-- Textarea -->
+            <textarea
+              v-else-if="field.type === 'textarea'"
+              :id="`${uid}-${field.id}`"
+              :placeholder="field.placeholder || ''"
+              :required="field.required"
+              :value="formDataValues[field.id]"
+              :readonly="isReadOnly || field.readOnly"
+              :disabled="isReadOnly || field.readOnly"
+              class="ww-form-input ww-form-textarea"
+              :class="{ 'ww-form-input--readonly': isReadOnly || field.readOnly, 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
+              rows="4"
+              @input="handleInput(field.id, $event.target.value)"
+              @focus="handleFocus(field.id)"
+              @blur="handleBlur(field.id)"
+            ></textarea>
 
-          <!-- Phone -->
-          <PhoneInput
-            v-else-if="field.type === 'phone'"
-            :id="`${uid}-${field.id}`"
-            :model-value="formDataValues[field.id]"
-            :default-country="field.phoneDefaultCountry || 'FR'"
-            :store-format="field.phoneStoreFormat || 'e164'"
-            :placeholder="field.placeholder || ''"
-            :disabled="isReadOnly || field.readOnly"
-            :readonly="isReadOnly || field.readOnly"
-            :lang="content.lang || 'fr'"
-            :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
-            @update:model-value="handleInput(field.id, $event)"
-            @focus="handleFocus(field.id)"
-            @blur="handleBlur(field.id)"
-          />
+            <!-- Select -->
+            <SmartSelect
+              v-else-if="field.type === 'select'"
+              :model-value="formDataValues[field.id]"
+              :options="parseOptions(field.options, field.optionsValueKey, field.optionsLabelKey)"
+              :threshold="field.optionsThreshold"
+              :multiple="field.multiple"
+              :placeholder="field.placeholder || t('selectPlaceholder')"
+              :disabled="isReadOnly || field.readOnly"
+              :readonly="isReadOnly || field.readOnly"
+              :no-results-text="t('noResults')"
+              :selected-count-label="t('selected')"
+              :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
+              @update:model-value="handleInput(field.id, $event)"
+              @focus="handleFocus(field.id)"
+              @blur="handleBlur(field.id)"
+            />
 
-          <!-- Original value (edit mode, dirty only) -->
-          <div
-            v-if="isEditMode && content?.showOriginalValue !== false && isFieldDirty(field.id)"
-            class="ww-form-original"
-          >
-            {{ formatOriginalValue(field) }}
+            <!-- Search (external) -->
+            <SearchSelect
+              v-else-if="field.type === 'search'"
+              :model-value="getSearchModelValue(field)"
+              :options="getSearchOptions(field)"
+              :debounce="field.searchDebounce"
+              :placeholder="field.placeholder || t('selectPlaceholder')"
+              :disabled="isReadOnly || field.readOnly"
+              :readonly="isReadOnly || field.readOnly"
+              :no-results-text="t('noResults')"
+              :loading-text="t('loading')"
+              :input-class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
+              @update:model-value="handleSearchSelect(field, $event)"
+              @search="handleSearchQuery(field.id, $event)"
+              @focus="handleFocus(field.id)"
+              @blur="handleBlur(field.id)"
+            />
+
+            <!-- Checkbox -->
+            <label
+              v-else-if="field.type === 'checkbox'"
+              class="ww-form-checkbox-label"
+              :class="{ 'ww-form-checkbox-label--dirty': isFieldDirty(field.id), 'ww-form-checkbox-label--error': errors[field.id] || groupErrorFieldIds.has(field.id), 'ww-form-checkbox-label--readonly': isReadOnly || field.readOnly }"
+              :for="`${uid}-${field.id}`"
+            >
+              <input
+                :id="`${uid}-${field.id}`"
+                type="checkbox"
+                :required="field.required"
+                :checked="formDataValues[field.id] === true || formDataValues[field.id] === 'true'"
+                :disabled="isReadOnly || field.readOnly"
+                class="ww-form-checkbox"
+                @change="handleInput(field.id, $event.target.checked)"
+                @focus="handleFocus(field.id)"
+                @blur="handleBlur(field.id)"
+              />
+              <span v-if="field.showLabel !== false">{{ field.label || field.id }}</span>
+              <span v-if="field.required && !(isReadOnly || field.readOnly)" class="ww-form-required">*</span>
+            </label>
+
+            <!-- Radio -->
+            <SmartSelect
+              v-else-if="field.type === 'radio'"
+              :model-value="formDataValues[field.id]"
+              :options="parseOptions(field.options, field.optionsValueKey, field.optionsLabelKey)"
+              :threshold="field.optionsThreshold"
+              :placeholder="field.placeholder || ''"
+              :disabled="isReadOnly || field.readOnly"
+              :readonly="isReadOnly || field.readOnly"
+              :no-results-text="t('noResults')"
+              :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
+              @update:model-value="handleInput(field.id, $event)"
+              @focus="handleFocus(field.id)"
+              @blur="handleBlur(field.id)"
+            />
+
+            <!-- Phone -->
+            <PhoneInput
+              v-else-if="field.type === 'phone'"
+              :id="`${uid}-${field.id}`"
+              :model-value="formDataValues[field.id]"
+              :default-country="field.phoneDefaultCountry || 'FR'"
+              :store-format="field.phoneStoreFormat || 'e164'"
+              :placeholder="field.placeholder || ''"
+              :disabled="isReadOnly || field.readOnly"
+              :readonly="isReadOnly || field.readOnly"
+              :lang="content.lang || 'fr'"
+              :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
+              @update:model-value="handleInput(field.id, $event)"
+              @focus="handleFocus(field.id)"
+              @blur="handleBlur(field.id)"
+            />
+
+            <!-- Original value (edit mode, dirty only) -->
+            <div
+              v-if="isEditMode && content?.showOriginalValue !== false && isFieldDirty(field.id)"
+              class="ww-form-original"
+            >
+              {{ formatOriginalValue(field) }}
+            </div>
+
+            <!-- Field error message -->
+            <div v-if="errors[field.id]" class="ww-form-error">{{ errors[field.id] }}</div>
           </div>
 
-          <!-- Field error message -->
-          <div v-if="errors[field.id]" class="ww-form-error">{{ errors[field.id] }}</div>
+          <!-- Group error messages — inserted after the last field of each group -->
+          <div
+            v-for="(group, gi) in groupErrorsAfterField(field.id)"
+            :key="`ge-${field.id}-${gi}`"
+            class="ww-form-field ww-form-error--group-row"
+            :class="`ww-form-field--${group.width || 'full'}`"
+          >
+            <div class="ww-form-error ww-form-error--group">{{ group.message }}</div>
+          </div>
           </template>
         </div>
 
-        <!-- Group error messages — inserted after the last field of each group -->
-        <div
-          v-for="(group, gi) in groupErrorsAfterField(field.id)"
-          :key="`ge-${field.id}-${gi}`"
-          class="ww-form-field ww-form-error--group-row"
-          :class="`ww-form-field--${group.width || 'full'}`"
-        >
-          <div class="ww-form-error ww-form-error--group">{{ group.message }}</div>
-        </div>
-        </template>
-
-      </div>
+      </template>
 
       <!-- Buttons -->
       <div
@@ -252,6 +255,26 @@ export default {
         return visibleFieldIds[visibleFieldIds.length - 1] === fieldId;
       });
     }
+
+    // Split processedFields into blocks separated by section entries.
+    // Each block: { section: field|null, fields: field[] }
+    // The first block has section=null if there are fields before the first section.
+    const fieldBlocks = computed(() => {
+      const blocks = [];
+      let current = { section: null, fields: [] };
+      for (const field of processedFields.value) {
+        if (field.type === "section") {
+          // Always push the current block (even if empty, to preserve section order)
+          blocks.push(current);
+          current = { section: field, fields: [] };
+        } else {
+          current.fields.push(field);
+        }
+      }
+      blocks.push(current);
+      // Drop leading empty block (no section, no fields)
+      return blocks.filter((b) => b.section !== null || b.fields.length > 0);
+    });
 
     // Map a raw item to { value, label } using field's searchValueKey and searchLabelTemplate
     function mapSearchItem(item, field) {
@@ -360,8 +383,6 @@ export default {
           type: inferFieldType(value),
           placeholder: "",
           required: false,
-          validationType: "none",
-          validationValue: "",
           validationMessage: "",
           options: "",
           defaultValue: path,
@@ -380,6 +401,7 @@ export default {
       groupErrorsAfterField,
       // Computed
       processedFields,
+      fieldBlocks,
       rootStyle,
       formClasses,
       isAddMode,
