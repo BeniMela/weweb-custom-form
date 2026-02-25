@@ -29,7 +29,6 @@ export default {
       "fieldsMultipleFormula",
       "fieldsSearchDebounceFormula",
       "fieldsDefaultValueFormula",
-      "fieldsValidationValueFormula",
       "fieldsHiddenFormula",
       {
         label: "Submit & Reset",
@@ -352,9 +351,10 @@ export default {
             type: "text",
             placeholder: "",
             required: false,
-            validationType: "none",
-            validationValue: "",
+            validationFormula: null,
             validationMessage: "",
+            validateOnChange: false,
+            validateOnBlur: true,
             options: "",
             optionsValueKey: "value",
             optionsLabelKey: "label",
@@ -362,7 +362,6 @@ export default {
             readOnly: false,
             hidden: false,
             showLabel: true,
-            validationFormula: null,
             multiple: false,
             searchDebounce: 300,
             searchValueKey: "id",
@@ -437,55 +436,40 @@ export default {
                 },
                 /* wwEditor:end */
               },
-              validationType: {
-                label: { en: "Validation" },
-                type: "TextSelect",
-                options: {
-                  options: [
-                    { value: "none", label: "None", default: true },
-                    { value: "minLength", label: "Min Length" },
-                    { value: "maxLength", label: "Max Length" },
-                    { value: "min", label: "Min Value" },
-                    { value: "max", label: "Max Value" },
-                    { value: "pattern", label: "Regex Pattern" },
-                    { value: "email", label: "Email Format" },
-                  ],
-                },
-              },
-              validationValue: {
-                label: { en: "Validation Value" },
+              validationFormula: {
+                label: { en: "Validation Formula" },
                 type: "Text",
                 bindable: true,
-                hidden: array?.item?.validationType === "none" || array?.item?.validationType === "email",
                 /* wwEditor:start */
                 bindingValidation: {
-                  type: "string",
-                  tooltip: "Dynamic validation value — bind a formula (e.g. formData.cou_countries_id.cou_iso_code to build a regex prefix)",
+                  type: "boolean",
+                  tooltip: "Bind a formula that returns true if the field is valid, false otherwise. Use validationMessage for the error text.",
                 },
                 propertyHelp: {
-                  tooltip:
-                    "For minLength/maxLength: number of characters. For min/max: numeric value. For pattern: regex string. Bindable for dynamic validation.",
+                  tooltip: "Bind a formula returning true (valid) or false (invalid). Example: formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_iso_code)",
                 },
                 /* wwEditor:end */
               },
               validationMessage: {
                 label: { en: "Error Message" },
                 type: "Text",
-                hidden: array?.item?.validationType === "none" && !array?.item?.validationFormula,
                 bindable: true,
+                hidden: !array?.item?.validationFormula,
               },
-              validationFormula: {
-                label: { en: "Custom Validation (Formula)" },
-                type: "Text",
-                bindable: true,
+              validateOnChange: {
+                label: { en: "Validate on Change" },
+                type: "OnOff",
+                defaultValue: false,
                 /* wwEditor:start */
-                bindingValidation: {
-                  type: "boolean",
-                  tooltip: "Bind a formula that returns true if the field is valid, false otherwise. Evaluated after built-in validation. Use validationMessage for the error text.",
-                },
-                propertyHelp: {
-                  tooltip: "Bind a formula returning true (valid) or false (invalid). Example: formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_iso_code)",
-                },
+                propertyHelp: { tooltip: "Re-validate this field immediately when its value changes." },
+                /* wwEditor:end */
+              },
+              validateOnBlur: {
+                label: { en: "Validate on Blur" },
+                type: "OnOff",
+                defaultValue: true,
+                /* wwEditor:start */
+                propertyHelp: { tooltip: "Re-validate this field when it loses focus." },
                 /* wwEditor:end */
               },
               options: {
@@ -646,10 +630,10 @@ export default {
                 isCollapsible: true,
                 properties: [
                   "required",
-                  "validationType",
-                  "validationValue",
-                  "validationMessage",
                   "validationFormula",
+                  "validationMessage",
+                  "validateOnChange",
+                  "validateOnBlur",
                 ],
               },
             ],
@@ -897,25 +881,6 @@ export default {
         !content.fields?.length ||
         !boundProps.fields,
     },
-    fieldsValidationValueFormula: {
-      label: { en: "Validation Value Field" },
-      type: "Formula",
-      section: "settings",
-      options: (content) => ({
-        template:
-          Array.isArray(content.fields) && content.fields.length > 0
-            ? content.fields[0]
-            : null,
-      }),
-      defaultValue: {
-        type: "f",
-        code: "context.mapping?.['validationValue']",
-      },
-      hidden: (content, sidepanelContent, boundProps) =>
-        !Array.isArray(content.fields) ||
-        !content.fields?.length ||
-        !boundProps.fields,
-    },
     fieldsHiddenFormula: {
       label: { en: "Hidden Field" },
       type: "Formula",
@@ -1040,6 +1005,8 @@ export default {
             formula: null,
             message: "",
             fields: "",
+            validateOnChange: false,
+            validateOnBlur: true,
           },
           options: {
             item: {
@@ -1075,8 +1042,24 @@ export default {
                 },
                 /* wwEditor:end */
               },
+              validateOnChange: {
+                label: { en: "Validate on Change" },
+                type: "OnOff",
+                defaultValue: false,
+                /* wwEditor:start */
+                propertyHelp: { tooltip: "Re-evaluate this group immediately when any field value changes." },
+                /* wwEditor:end */
+              },
+              validateOnBlur: {
+                label: { en: "Validate on Blur" },
+                type: "OnOff",
+                defaultValue: true,
+                /* wwEditor:start */
+                propertyHelp: { tooltip: "Re-evaluate this group when a field loses focus." },
+                /* wwEditor:end */
+              },
             },
-            propertiesOrder: ["formula", "message", "fields"],
+            propertiesOrder: ["formula", "message", "fields", "validateOnChange", "validateOnBlur"],
           },
         },
         movable: true,

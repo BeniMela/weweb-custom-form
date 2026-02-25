@@ -83,32 +83,7 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
       if (isEmpty) return field.validationMessage || t("required");
     }
 
-    if (value === undefined || value === null || value === "") return null;
-
-    const { validationType: valType, validationValue: valValue, validationMessage: msg } = field;
-
-    if (valType === "email") {
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) return msg || t("emailInvalid");
-    } else if (valType === "minLength") {
-      const min = parseInt(valValue, 10);
-      if (!isNaN(min) && String(value).length < min) return msg || t("minLength", { n: min });
-    } else if (valType === "maxLength") {
-      const max = parseInt(valValue, 10);
-      if (!isNaN(max) && String(value).length > max) return msg || t("maxLength", { n: max });
-    } else if (valType === "min") {
-      const min = parseFloat(valValue);
-      if (!isNaN(min) && Number(value) < min) return msg || t("minValue", { n: min });
-    } else if (valType === "max") {
-      const max = parseFloat(valValue);
-      if (!isNaN(max) && Number(value) > max) return msg || t("maxValue", { n: max });
-    } else if (valType === "pattern") {
-      try {
-        if (!new RegExp(valValue).test(String(value))) return msg || t("patternInvalid");
-      } catch (e) { /* invalid regex, skip */ }
-    }
-
-    // Custom formula validation: field.validationFormula is resolved by WeWeb binding
-    // It should return true (valid) or false (invalid)
+    // Formula validation: resolved by WeWeb binding, true = valid, false = invalid
     if (field.validationFormula !== null && field.validationFormula !== undefined) {
       if (field.validationFormula === false) {
         return field.validationMessage || t("patternInvalid");
@@ -237,8 +212,27 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
       event: { fieldId, value, formData: { ...formDataValues.value } },
     });
 
-    if (props.content?.validateOnChange) {
-      updateFieldValidation(fieldId);
+    // Per-field validateOnChange (falls back to global setting)
+    const fieldDef = processedFields.value.find((f) => f.id === fieldId);
+    const fieldOnChange = fieldDef?.validateOnChange ?? props.content?.validateOnChange ?? false;
+    if (fieldOnChange) updateFieldValidation(fieldId);
+
+    // Groups with validateOnChange: re-evaluate if this field belongs to the group
+    const groups = props.content?.validationGroups;
+    if (Array.isArray(groups)) {
+      for (const group of groups) {
+        if (!group.validateOnChange) continue;
+        const groupFieldIds = String(group.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+        if (groupFieldIds.includes(fieldId)) {
+          const newErrors = { ...errors.value };
+          for (const id of groupFieldIds) delete newErrors[id];
+          applyGroupValidation(newErrors);
+          errors.value = newErrors;
+          setErrors(newErrors);
+          setIsValid(Object.keys(newErrors).length === 0);
+          break;
+        }
+      }
     }
   }
 
@@ -259,8 +253,29 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
       event: { fieldId, value: formDataValues.value[fieldId] },
     });
 
-    if (props.content?.validateOnBlur !== false && !isReadOnly.value) {
-      updateFieldValidation(fieldId);
+    if (!isReadOnly.value) {
+      // Per-field validateOnBlur (falls back to global setting)
+      const fieldDef = processedFields.value.find((f) => f.id === fieldId);
+      const fieldOnBlur = fieldDef?.validateOnBlur ?? props.content?.validateOnBlur ?? true;
+      if (fieldOnBlur) updateFieldValidation(fieldId);
+
+      // Groups with validateOnBlur: re-evaluate if this field belongs to the group
+      const groups = props.content?.validationGroups;
+      if (Array.isArray(groups)) {
+        for (const group of groups) {
+          if (group.validateOnBlur === false) continue;
+          const groupFieldIds = String(group.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+          if (groupFieldIds.includes(fieldId)) {
+            const newErrors = { ...errors.value };
+            for (const id of groupFieldIds) delete newErrors[id];
+            applyGroupValidation(newErrors);
+            errors.value = newErrors;
+            setErrors(newErrors);
+            setIsValid(Object.keys(newErrors).length === 0);
+            break;
+          }
+        }
+      }
     }
   }
 

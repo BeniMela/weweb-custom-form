@@ -69,8 +69,6 @@ export function useFields(props, { isDisplayMode }) {
         resolveMappingFormula(props.content?.fieldsSearchLabelTemplateFormula, field) ?? field?.searchLabelTemplate ?? "";
       const defaultValue =
         resolveMappingFormula(props.content?.fieldsDefaultValueFormula, field) ?? field?.defaultValue ?? "";
-      const validationValue =
-        resolveMappingFormula(props.content?.fieldsValidationValueFormula, field) ?? field?.validationValue ?? "";
       const hidden =
         resolveMappingFormula(props.content?.fieldsHiddenFormula, field) ?? field?.hidden ?? false;
       const readOnly = field?.readOnly ?? false;
@@ -85,10 +83,10 @@ export function useFields(props, { isDisplayMode }) {
         hidden: Boolean(hidden),
         readOnly: Boolean(readOnly),
         showLabel: Boolean(showLabel),
-        validationType: field?.validationType ?? "none",
-        validationValue: String(validationValue),
         validationMessage: field?.validationMessage ?? "",
         validationFormula: field?.validationFormula ?? null,
+        validateOnChange: field?.validateOnChange ?? false,
+        validateOnBlur: field?.validateOnBlur ?? true,
         options,
         optionsValueKey: String(optionsValueKey),
         optionsLabelKey: String(optionsLabelKey),

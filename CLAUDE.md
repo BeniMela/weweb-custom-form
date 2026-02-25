@@ -123,26 +123,28 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 | `loadData` | `(data)` | Load a JSON object into the form — sets values AND originalValues (dirty tracking baseline) |
 | `setSearchResults` | `(fieldId, results)` | Inject search results for a `search` field (no external variable needed) |
 
-### Validation Types
+### Validation
 
-`none`, `minLength`, `maxLength`, `min`, `max`, `pattern`, `email`
+Validation is formula-based only — no built-in type validators (no minLength, pattern, email, etc.).
 
-Validation messages support custom text per field. Default messages use the selected language (FR/EN).
-
-**`validationValue`** is bindable — use a formula for dynamic validation. Example: bind `pattern` validationValue to `formData.cou_countries_id.cou_iso_code` to build a dynamic regex like `^FR`.
-
-**`validationFormula`** (bindable, returns `boolean`) — Custom validation via formula. Bind a formula that returns `true` (valid) or `false` (invalid). Evaluated after built-in validation. Uses `validationMessage` for the error text.
+**Per-field `validationFormula`** (Text, bindable) — Bind a formula returning `true` (valid) or `false` (invalid). Evaluated after `required` check. Uses `validationMessage` for the error text.
 ```javascript
 // Example: unloco must start with country iso code
 formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_iso_code ?? "")
 ```
 
+**Per-field `validateOnChange`** (OnOff, default `false`) — Re-validate this field immediately on value change. Falls back to global `validateOnChange` setting.
+
+**Per-field `validateOnBlur`** (OnOff, default `true`) — Re-validate this field on blur. Falls back to global `validateOnBlur` setting.
+
 **`validationGroups`** (Array) — Cross-field validation rules. Each group has:
 - `formula` (Text, bindable) — returns `true` (valid) or `false` (invalid)
 - `message` (Text) — error message shown on all listed fields
 - `fields` (Text) — comma-separated field IDs: `"adr_is_billing,adr_is_delivery,adr_is_pickup"`
+- `validateOnChange` (OnOff, default `false`) — re-evaluate when any listed field changes
+- `validateOnBlur` (OnOff, default `true`) — re-evaluate when any listed field blurs
 
-When `formula === false`, the error message is set on every field in `fields`. Group errors are re-evaluated on every `updateFieldValidation` call and cleared automatically when `formula` becomes `true`. Evaluated in both `validateAll` (submit) and incremental validation (change/blur).
+Group errors are cleared and re-applied on each relevant change/blur and on `validateAll`. Always evaluated on submit.
 ```
 // Example: at least one address type must be checked
 formula: formData.adr_is_billing || formData.adr_is_delivery || formData.adr_is_pickup
@@ -175,7 +177,7 @@ For `search` fields: pass the full raw object (not just the id) so the label dis
 ```javascript
 loadData({ cou_countries_id: { id: 63, cou_label_fr: "France", cou_iso_code: "FR" } })
 ```
-5. **Formula properties**: `fieldsIdFormula`, `fieldsLabelFormula`, `fieldsTypeFormula`, `fieldsPlaceholderFormula`, `fieldsRequiredFormula`, `fieldsOptionsFormula`, `fieldsOptionsValueFormula`, `fieldsOptionsLabelFormula`, `fieldsOptionsThresholdFormula`, `fieldsMultipleFormula`, `fieldsSearchDebounceFormula`, `fieldsDefaultValueFormula`, `fieldsValidationValueFormula` for mapping when fields array is bound
+5. **Formula properties**: `fieldsIdFormula`, `fieldsLabelFormula`, `fieldsTypeFormula`, `fieldsPlaceholderFormula`, `fieldsRequiredFormula`, `fieldsOptionsFormula`, `fieldsOptionsValueFormula`, `fieldsOptionsLabelFormula`, `fieldsOptionsThresholdFormula`, `fieldsMultipleFormula`, `fieldsSearchDebounceFormula`, `fieldsDefaultValueFormula`, `fieldsHiddenFormula` for mapping when fields array is bound
 
 ### Select/Radio — SmartSelect Component
 
