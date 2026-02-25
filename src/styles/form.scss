@@ -298,8 +298,8 @@
 }
 
 .ww-form-section-icon {
-  font-size: 1.1em; // slightly larger than the text to align optically
-  line-height: 1;
+  font: 400 1.1em/1 'Material Symbols Rounded', monospace;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
 }
 
