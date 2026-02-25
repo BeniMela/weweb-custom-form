@@ -136,8 +136,13 @@
 
   &:disabled {
     cursor: default;
-    opacity: 0.7;
+    opacity: 1; // keep full opacity so checked state is clearly visible
   }
+}
+
+// Checked checkbox in readonly mode: green accent
+.ww-form-checkbox-label--readonly .ww-form-checkbox:disabled:checked {
+  accent-color: #16a34a;
 }
 
 // ==========================================
@@ -259,33 +264,6 @@
   flex-shrink: 0;
 }
 
-// ==========================================
-// Display mode
-// ==========================================
-.ww-form-display-value {
-  font-size: var(--ww-form-display-font-size, 14px);
-  color: var(--ww-form-display-color, #111827);
-  padding: 4px 0;
-  word-break: break-word;
-}
-
-.ww-form-display-bool {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  background-color: #fee2e2;
-  color: #dc2626;
-
-  &--true {
-    background-color: #dcfce7;
-    color: #16a34a;
-  }
-}
 
 // ==========================================
 // Buttons

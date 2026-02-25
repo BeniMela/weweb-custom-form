@@ -63,9 +63,9 @@ Editor-only code (`generateFields`, `isEditing`) stays in `wwElement.vue` inside
 |------|-------|-------------|
 | **Edit** | `"edit"` (default) | Modify existing data. Submit/Reset visible only when dirty. Shows original values. |
 | **Add** | `"add"` | Create new entry. Submit always visible. No dirty tracking display. |
-| **Display** | `"display"` | Read-only view. No form inputs, just text display. |
+| **Display** | `"display"` | Alias for readonly — same form rendering with all inputs disabled. |
 
-Backward compatible: `"form"` and `undefined` map to Edit mode.
+Backward compatible: `"form"` and `undefined` map to Edit mode. `display` mode simply sets `isReadOnly = true` internally — no separate template. Checked checkboxes render with a green accent in readonly mode (`.ww-form-checkbox-label--readonly`).
 
 ### Field Types
 

@@ -1,7 +1,7 @@
 import { computed } from "vue";
 import { inferFieldType, formatFieldLabel } from "../utils/helpers";
 
-export function useFields(props, { isDisplayMode }) {
+export function useFields(props) {
   const { resolveMappingFormula } = wwLib.wwFormula.useFormula();
 
   const autoFields = computed(() => {
@@ -33,8 +33,6 @@ export function useFields(props, { isDisplayMode }) {
     if (hasManualFields) {
       fields = manualFields;
     } else if (shouldAutoGenerate && autoFields.value.length > 0) {
-      fields = autoFields.value;
-    } else if (!hasManualFields && isDisplayMode.value && autoFields.value.length > 0) {
       fields = autoFields.value;
     } else {
       fields = [];

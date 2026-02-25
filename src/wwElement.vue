@@ -1,48 +1,7 @@
 <template>
   <div class="ww-dynamic-form" :style="rootStyle">
-    <!-- DISPLAY MODE -->
-    <div v-if="isDisplayMode" class="ww-form-display">
-      <div class="ww-form-fields" :class="formClasses">
-        <div
-          v-for="field in processedFields"
-          :key="field.id"
-          v-show="!field.hidden"
-          class="ww-form-field"
-          :class="[`ww-form-field--${field.width || 'full'}`, { 'ww-form-field--section': field.type === 'section' }]"
-        >
-          <template v-if="field.type === 'section'">
-            <div class="ww-form-section">
-              <span v-if="field.label" class="ww-form-section-title">{{ field.label }}</span>
-            </div>
-          </template>
-          <template v-else>
-            <div class="ww-form-label">{{ field.label || field.id }}</div>
-            <div class="ww-form-display-value">
-              <template v-if="field.type === 'checkbox'">
-                <span class="ww-form-display-bool" :class="{ 'ww-form-display-bool--true': formDataValues[field.id] }">
-                  {{ formDataValues[field.id] ? '✓' : '✗' }}
-                </span>
-              </template>
-              <template v-else-if="field.type === 'select' || field.type === 'radio'">
-                {{ getOptionLabel(field, formDataValues[field.id]) }}
-              </template>
-              <template v-else-if="field.type === 'search'">
-                {{ getSearchDisplayLabel(field) }}
-              </template>
-              <template v-else-if="field.type === 'phone'">
-                {{ formatDisplayValue(formDataValues[field.id]) }}
-              </template>
-              <template v-else>
-                {{ formatDisplayValue(formDataValues[field.id]) }}
-              </template>
-            </div>
-          </template>
-        </div>
-      </div>
-    </div>
-
-    <!-- FORM MODE -->
-    <form v-else @submit.prevent="handleSubmit" novalidate>
+    <!-- FORM MODE (also handles display mode via isReadOnly) -->
+    <form @submit.prevent="handleSubmit" novalidate>
       <div class="ww-form-fields" :class="formClasses">
         <template v-for="field in processedFields" :key="field.id">
         <div
@@ -143,7 +102,7 @@
           <label
             v-else-if="field.type === 'checkbox'"
             class="ww-form-checkbox-label"
-            :class="{ 'ww-form-checkbox-label--dirty': isFieldDirty(field.id), 'ww-form-checkbox-label--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
+            :class="{ 'ww-form-checkbox-label--dirty': isFieldDirty(field.id), 'ww-form-checkbox-label--error': errors[field.id] || groupErrorFieldIds.has(field.id), 'ww-form-checkbox-label--readonly': isReadOnly || field.readOnly }"
             :for="`${uid}-${field.id}`"
           >
             <input
@@ -264,16 +223,16 @@ export default {
     const { t } = useI18n(props);
 
     // Mode
-    const isDisplayMode = computed(() => props.content?.mode === "display");
     const isAddMode = computed(() => props.content?.mode === "add");
     const isEditMode = computed(() => {
       const mode = props.content?.mode;
       return mode === "edit" || mode === "form" || !mode;
     });
-    const isReadOnly = computed(() => props.content?.readOnly === true || isDisplayMode.value);
+    // display mode is now just an alias for readOnly — same form rendering
+    const isReadOnly = computed(() => props.content?.readOnly === true || props.content?.mode === "display");
 
     // Fields & Styles
-    const { processedFields, getDefaultValues } = useFields(props, { isDisplayMode });
+    const { processedFields, getDefaultValues } = useFields(props);
     const { rootStyle, formClasses } = useStyles(props);
 
     // Form state (includes validation, handlers, actions, watchers)
@@ -423,7 +382,6 @@ export default {
       processedFields,
       rootStyle,
       formClasses,
-      isDisplayMode,
       isAddMode,
       isEditMode,
       isReadOnly,
