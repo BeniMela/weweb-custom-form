@@ -211,7 +211,6 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-top: 6px;
     padding: 6px 10px;
     background-color: var(--ww-form-error-bg, #ffdddd);
     border-left: 3px solid var(--ww-form-error-color, #ef4444);
@@ -223,6 +222,11 @@
       flex-shrink: 0;
     }
   }
+}
+
+// Group error row — standalone grid item, no extra padding/gap
+.ww-form-error--group-row {
+  gap: 0;
 }
 
 // ==========================================

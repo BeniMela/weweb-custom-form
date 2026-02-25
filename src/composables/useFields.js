@@ -67,6 +67,10 @@ export function useFields(props, { isDisplayMode }) {
         resolveMappingFormula(props.content?.fieldsSearchValueKeyFormula, field) ?? field?.searchValueKey ?? "id";
       const searchLabelTemplate =
         resolveMappingFormula(props.content?.fieldsSearchLabelTemplateFormula, field) ?? field?.searchLabelTemplate ?? "";
+      const phoneDefaultCountry =
+        resolveMappingFormula(props.content?.fieldsPhoneDefaultCountryFormula, field) ?? field?.phoneDefaultCountry ?? "FR";
+      const phoneStoreFormat =
+        resolveMappingFormula(props.content?.fieldsPhoneStoreFormatFormula, field) ?? field?.phoneStoreFormat ?? "e164";
       const defaultValue =
         resolveMappingFormula(props.content?.fieldsDefaultValueFormula, field) ?? field?.defaultValue ?? "";
       const hidden =
@@ -95,6 +99,8 @@ export function useFields(props, { isDisplayMode }) {
         searchDebounce: Number(searchDebounce) || 300,
         searchValueKey: String(searchValueKey),
         searchLabelTemplate: String(searchLabelTemplate),
+        phoneDefaultCountry: String(phoneDefaultCountry),
+        phoneStoreFormat: String(phoneStoreFormat),
         defaultValue,
         width: field?.width ?? "full",
       };

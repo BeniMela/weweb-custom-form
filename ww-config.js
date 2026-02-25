@@ -326,9 +326,7 @@ export default {
           type: "email",
           placeholder: "Enter your email",
           required: true,
-          validationType: "email",
-          validationValue: "",
-          validationMessage: "Please enter a valid email",
+          validationMessage: "",
           options: "",
           defaultValue: "",
           width: "full",
@@ -366,6 +364,8 @@ export default {
             searchDebounce: 300,
             searchValueKey: "id",
             searchLabelTemplate: "",
+            phoneDefaultCountry: "FR",
+            phoneStoreFormat: "e164",
             defaultValue: "",
             width: "full",
           },
@@ -389,7 +389,7 @@ export default {
                     { value: "email", label: "Email" },
                     { value: "password", label: "Password" },
                     { value: "number", label: "Number" },
-                    { value: "tel", label: "Phone" },
+                    { value: "phone", label: "Phone (with country selector)" },
                     { value: "url", label: "URL" },
                     { value: "date", label: "Date" },
                     { value: "textarea", label: "Textarea" },
@@ -583,6 +583,35 @@ export default {
                 },
                 /* wwEditor:end */
               },
+              phoneDefaultCountry: {
+                label: { en: "Default Country" },
+                type: "Text",
+                defaultValue: "FR",
+                hidden: array?.item?.type !== "phone",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip: "ISO 3166-1 alpha-2 country code for the default dial prefix (e.g. FR, US, DE). Used when no value is set.",
+                },
+                /* wwEditor:end */
+              },
+              phoneStoreFormat: {
+                label: { en: "Store Format" },
+                type: "TextSelect",
+                defaultValue: "e164",
+                hidden: array?.item?.type !== "phone",
+                options: {
+                  options: [
+                    { value: "e164", label: "E.164 (+33612345678)", default: true },
+                    { value: "national", label: "National (06 12 34 56 78)" },
+                    { value: "raw", label: "Raw (as typed)" },
+                  ],
+                },
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip: "Format stored in formData. E.164 is recommended for backend use. National keeps local formatting. Raw stores digits as typed.",
+                },
+                /* wwEditor:end */
+              },
               showLabel: {
                 label: { en: "Show Label" },
                 type: "OnOff",
@@ -623,6 +652,8 @@ export default {
               "searchDebounce",
               "searchValueKey",
               "searchLabelTemplate",
+              "phoneDefaultCountry",
+              "phoneStoreFormat",
               "defaultValue",
               "width",
               {
@@ -975,6 +1006,7 @@ export default {
             formula: null,
             message: "",
             fields: "",
+            width: "full",
             validateOnChange: false,
             validateOnBlur: true,
           },
@@ -1028,8 +1060,25 @@ export default {
                 propertyHelp: { tooltip: "Re-evaluate this group when a field loses focus." },
                 /* wwEditor:end */
               },
+              width: {
+                label: { en: "Message Width" },
+                type: "TextSelect",
+                defaultValue: "full",
+                options: {
+                  options: [
+                    { value: "full", label: "Full", default: true },
+                    { value: "half", label: "Half" },
+                    { value: "third", label: "Third" },
+                  ],
+                },
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip: "Width of the error message row in the form grid (full/half/third).",
+                },
+                /* wwEditor:end */
+              },
             },
-            propertiesOrder: ["formula", "message", "fields", "validateOnChange", "validateOnBlur"],
+            propertiesOrder: ["formula", "message", "fields", "width", "validateOnChange", "validateOnBlur"],
           },
         },
         movable: true,

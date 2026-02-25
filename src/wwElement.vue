@@ -29,6 +29,9 @@
               <template v-else-if="field.type === 'search'">
                 {{ getSearchDisplayLabel(field) }}
               </template>
+              <template v-else-if="field.type === 'phone'">
+                {{ formatDisplayValue(formDataValues[field.id]) }}
+              </template>
               <template v-else>
                 {{ formatDisplayValue(formDataValues[field.id]) }}
               </template>
@@ -175,6 +178,23 @@
             @blur="handleBlur(field.id)"
           />
 
+          <!-- Phone -->
+          <PhoneInput
+            v-else-if="field.type === 'phone'"
+            :id="`${uid}-${field.id}`"
+            :model-value="formDataValues[field.id]"
+            :default-country="field.phoneDefaultCountry || 'FR'"
+            :store-format="field.phoneStoreFormat || 'e164'"
+            :placeholder="field.placeholder || ''"
+            :disabled="isReadOnly || field.readOnly"
+            :readonly="isReadOnly || field.readOnly"
+            :lang="content.lang || 'fr'"
+            :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
+            @update:model-value="handleInput(field.id, $event)"
+            @focus="handleFocus(field.id)"
+            @blur="handleBlur(field.id)"
+          />
+
           <!-- Original value (edit mode, dirty only) -->
           <div
             v-if="isEditMode && content?.showOriginalValue !== false && isFieldDirty(field.id)"
@@ -185,12 +205,17 @@
 
           <!-- Field error message -->
           <div v-if="errors[field.id]" class="ww-form-error">{{ errors[field.id] }}</div>
-
-          <!-- Group error message — shown once after the last field of the group -->
-          <div v-if="groupErrorAfterField[field.id]" class="ww-form-error ww-form-error--group">
-            {{ groupErrorAfterField[field.id] }}
-          </div>
           </template>
+        </div>
+
+        <!-- Group error messages — standalone grid items, one per failing group -->
+        <div
+          v-for="(group, gi) in groupErrors"
+          :key="`ge-${gi}`"
+          class="ww-form-field ww-form-error--group-row"
+          :class="`ww-form-field--${group.width || 'full'}`"
+        >
+          <div class="ww-form-error ww-form-error--group">{{ group.message }}</div>
         </div>
       </div>
 
@@ -222,9 +247,10 @@ import { useI18n, useFields, useFormState, useStyles } from "./composables";
 import { isInputType, parseOptions, getOptionLabel, formatDisplayValue, inferFieldType, formatFieldLabel } from "./utils/helpers";
 import SmartSelect from "./components/SmartSelect.vue";
 import SearchSelect from "./components/SearchSelect.vue";
+import PhoneInput from "./components/PhoneInput.vue";
 
 export default {
-  components: { SmartSelect, SearchSelect },
+  components: { SmartSelect, SearchSelect, PhoneInput },
   props: {
     uid: { type: String, required: true },
     content: { type: Object, required: true },
@@ -251,16 +277,6 @@ export default {
 
     // Form state (includes validation, handlers, actions, watchers)
     const form = useFormState(props, ctx, { processedFields, getDefaultValues, isReadOnly, t });
-
-    // Returns the group error message to display after this field (last field in group), or null
-    const groupErrorAfterField = computed(() => {
-      const result = {};
-      for (const g of form.groupErrors.value) {
-        const lastId = g.fields[g.fields.length - 1];
-        if (lastId) result[lastId] = g.message;
-      }
-      return result;
-    });
 
     // Set of field IDs that are part of a failing group (for red border)
     const groupErrorFieldIds = computed(() => form.getGroupErrorFieldIds());
@@ -387,7 +403,7 @@ export default {
       // State
       formDataValues: form.formDataValues,
       errors: form.errors,
-      groupErrorAfterField,
+      groupErrors: form.groupErrors,
       groupErrorFieldIds,
       // Computed
       processedFields,
@@ -438,4 +454,5 @@ export default {
 
 <style lang="scss">
 @import "./styles/form.scss";
+@import "./styles/phone-input.scss";
 </style>

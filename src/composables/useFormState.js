@@ -1,5 +1,6 @@
 import { computed, ref, watch } from "vue";
 import { resolvePathValue, getOptionLabel } from "../utils/helpers";
+import { isValidPhoneNumber } from "libphonenumber-js/min";
 
 export function useFormState(props, ctx, { processedFields, getDefaultValues, isReadOnly, t }) {
   // ==========================================
@@ -87,6 +88,24 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
       if (isEmpty) return field.validationMessage || t("required");
     }
 
+    // Email validation
+    if (field.type === "email" && value) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) {
+        return field.validationMessage || t("emailInvalid");
+      }
+    }
+
+    // Phone validation: check E.164 or national number is valid
+    if (field.type === "phone" && value) {
+      try {
+        if (!isValidPhoneNumber(String(value), field.phoneDefaultCountry || "FR")) {
+          return field.validationMessage || t("phoneInvalid");
+        }
+      } catch (e) {
+        return field.validationMessage || t("phoneInvalid");
+      }
+    }
+
     // Formula validation: resolved by WeWeb binding, true = valid, false = invalid
     if (field.validationFormula !== null && field.validationFormula !== undefined) {
       if (field.validationFormula === false) {
@@ -105,7 +124,7 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
     for (const group of groups) {
       if (group.formula === false) {
         const fieldIds = String(group.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-        failing.push({ message: group.message || t("patternInvalid"), fields: fieldIds });
+        failing.push({ message: group.message || t("patternInvalid"), fields: fieldIds, width: group.width || "full" });
       }
     }
     return failing;

@@ -28,13 +28,15 @@ custom-form/
     │   └── useStyles.js      # rootStyle + formClasses computed
     ├── components/
     │   ├── SmartSelect.vue   # Smart select: button group (≤ threshold) or searchable dropdown (> threshold)
-    │   └── SearchSelect.vue  # External search: debounce → search-query event → bound options → { value, label }
+    │   ├── SearchSelect.vue  # External search: debounce → search-query event → bound options → { value, label }
+    │   └── PhoneInput.vue    # Phone input: country selector + national number + libphonenumber-js
     ├── utils/
     │   └── helpers.js        # Pure functions (no Vue, no WeWeb): parseOptions, isInputType, etc.
     └── styles/
-        ├── form.scss         # Main form styles (imported as scoped in wwElement.vue)
-        ├── smart-select.scss # SmartSelect styles (imported as scoped in SmartSelect.vue)
-        └── search-select.scss # SearchSelect styles (imported as scoped in SearchSelect.vue)
+        ├── form.scss           # Main form styles (imported in wwElement.vue)
+        ├── phone-input.scss    # PhoneInput styles (imported in wwElement.vue)
+        ├── smart-select.scss   # SmartSelect styles (imported in SmartSelect.vue)
+        └── search-select.scss  # SearchSelect styles (imported in SearchSelect.vue)
 ```
 
 ### Architecture
@@ -67,9 +69,11 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 
 ### Field Types
 
-`text`, `email`, `password`, `number`, `tel`, `url`, `date`, `textarea`, `select`, `checkbox`, `radio`, `search`, `section`
+`text`, `email`, `password`, `number`, `phone`, `url`, `date`, `textarea`, `select`, `checkbox`, `radio`, `search`, `section`
 
 **`section`** — Visual separator with optional title and a horizontal line. No value in `formData`. Set `label` to the section title (e.g. "Localisation"), leave empty for a plain divider. Width `full` spans the whole row.
+
+**`phone`** — International phone input with country selector. Uses `libphonenumber-js/min` for parsing, formatting and validation. See "Phone — International Phone Type" section below.
 
 ### Per-field Read Only, Show Label & Hidden
 
@@ -125,7 +129,7 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 
 ### Validation
 
-Validation is formula-based only — no built-in type validators (no minLength, pattern, email, etc.).
+Built-in type validators: `email` format check (uses `emailInvalid` translation), `phone` validity via `libphonenumber-js`. All other types are formula-only.
 
 **Per-field `validationFormula`** (Text, bindable) — Bind a formula returning `true` (valid) or `false` (invalid). Evaluated after `required` check. Uses `validationMessage` for the error text.
 ```javascript
@@ -141,10 +145,11 @@ formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_i
 - `formula` (Text, bindable) — returns `true` (valid) or `false` (invalid)
 - `message` (Text) — error message shown on all listed fields
 - `fields` (Text) — comma-separated field IDs: `"adr_is_billing,adr_is_delivery,adr_is_pickup"`
+- `width` (TextSelect, default `"full"`) — width of the error message row in the grid (`full`/`half`/`third`)
 - `validateOnChange` (OnOff, default `false`) — re-evaluate when any listed field changes
 - `validateOnBlur` (OnOff, default `true`) — re-evaluate when any listed field blurs
 
-Group errors are stored separately from field errors in `groupErrors` ref. Fields in a failing group get a red border (`ww-form-input--error`) but **no repeated text**. The error message is displayed **once**, after the last field listed in `fields`, with a `⚠` icon and a left-bordered banner style (`ww-form-error--group`). Always evaluated on submit.
+Group errors are stored separately from field errors in `groupErrors` ref. Fields in a failing group get a red border (`ww-form-input--error`) but **no repeated text**. The error message is displayed **once** as a **standalone grid item** (`.ww-form-error--group-row`) rendered after all the form fields, with a `⚠` icon and a left-bordered banner style (`ww-form-error--group`). The `width` property controls its column span in the grid. Always evaluated on submit.
 ```
 // Example: at least one address type must be checked
 formula: formData.adr_is_billing || formData.adr_is_delivery || formData.adr_is_pickup
@@ -156,7 +161,7 @@ fields:  "adr_is_billing,adr_is_delivery,adr_is_pickup"
 
 Property `lang` (TextSelect, bindable): `"fr"` (default) or `"en"`
 
-Translated strings: required, emailInvalid, minLength, maxLength, minValue, maxValue, patternInvalid, selectPlaceholder, noResults, loading, selected, was, submit, reset.
+Translated strings: required, emailInvalid, minLength, maxLength, minValue, maxValue, patternInvalid, phoneInvalid, selectPlaceholder, noResults, loading, selected, was, submit, reset.
 
 ### Data Binding & Field Generation
 
@@ -236,6 +241,32 @@ On Search Query
 **Dirty tracking:** Compares by `.value` property (not object reference).
 
 **Required validation:** Valid only when `value?.value` is truthy.
+
+### Phone — International Phone Type
+
+The `phone` field type uses the `PhoneInput` component (`src/components/PhoneInput.vue`). It integrates `libphonenumber-js/min` (~80kB) for international phone handling.
+
+**Per-field properties:**
+- **`phoneDefaultCountry` (Text, default `"FR"`)** — ISO 3166-1 alpha-2 code for the default dial prefix when no value is set (e.g. `FR`, `US`, `DE`).
+- **`phoneStoreFormat` (TextSelect, default `"e164"`)** — Format stored in `formData`:
+  - `e164` — E.164 format (`+33612345678`) — recommended for backend
+  - `national` — National format (`06 12 34 56 78`)
+  - `raw` — Exactly as typed
+
+**UX:**
+- Country selector button (flag + dial code) opens a searchable country dropdown
+- National number input with live `AsYouType` formatting
+- Country list sorted alphabetically using `Intl.DisplayNames` + `lang` prop
+- Click outside closes the dropdown
+- `parseIncoming()` on mount/modelValue change: parses E.164 back to selectedCountry + national display
+
+**Validation:** `isValidPhoneNumber(value, country)` from `libphonenumber-js/min`. Error message: `t("phoneInvalid")` — "Numéro de téléphone invalide" / "Invalid phone number".
+
+**Display mode:** Shows the stored value as-is (E.164 or national depending on `phoneStoreFormat`).
+
+**Package dependency:** `"libphonenumber-js": "^1.11.0"` in `package.json`.
+
+**Styles:** `src/styles/phone-input.scss` — imported globally in `wwElement.vue`. Uses CSS variables from the form theme (`--ww-form-input-*`).
 
 ### Select/Radio Options Binding
 

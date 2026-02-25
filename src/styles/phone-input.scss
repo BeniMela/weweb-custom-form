@@ -1,0 +1,168 @@
+.ww-phone-input {
+  display: flex;
+  align-items: center;
+  position: relative;
+  border: 1px solid var(--ww-form-input-border-color, #d1d5db);
+  border-radius: var(--ww-form-input-border-radius, 6px);
+  background: var(--ww-form-input-bg, #ffffff);
+  transition: border-color 0.15s;
+
+  &:focus-within {
+    border-color: var(--ww-form-input-focus-border-color, #6366f1);
+    outline: none;
+  }
+
+  &--disabled,
+  &--readonly {
+    opacity: 0.6;
+    pointer-events: none;
+    background: var(--ww-form-input-bg, #f9fafb);
+  }
+
+  // Country selector button
+  &-country {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: var(--ww-form-input-padding, 8px 10px);
+    border: none;
+    border-right: 1px solid var(--ww-form-input-border-color, #d1d5db);
+    border-radius: var(--ww-form-input-border-radius, 6px) 0 0 var(--ww-form-input-border-radius, 6px);
+    background: transparent;
+    cursor: pointer;
+    font-size: var(--ww-form-input-font-size, 14px);
+    color: var(--ww-form-input-text-color, #374151);
+    white-space: nowrap;
+    flex-shrink: 0;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    &:disabled {
+      cursor: default;
+    }
+  }
+
+  &-flag {
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  &-dial {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  &-caret {
+    opacity: 0.5;
+    flex-shrink: 0;
+  }
+
+  // Phone number input
+  &-number {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: var(--ww-form-input-padding, 8px 10px);
+    font-size: var(--ww-form-input-font-size, 14px);
+    color: var(--ww-form-input-text-color, #374151);
+    width: 100%;
+
+    &::placeholder {
+      color: var(--ww-form-input-placeholder-color, #9ca3af);
+    }
+
+    &:disabled,
+    &[readonly] {
+      cursor: default;
+    }
+  }
+
+  // Dropdown
+  &-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    z-index: 1000;
+    width: max(280px, 100%);
+    background: var(--ww-form-input-bg, #ffffff);
+    border: 1px solid var(--ww-form-input-border-color, #d1d5db);
+    border-radius: var(--ww-form-input-border-radius, 6px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    overflow: hidden;
+  }
+
+  // Search inside dropdown
+  &-search {
+    display: block;
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-bottom: 1px solid var(--ww-form-input-border-color, #d1d5db);
+    font-size: 13px;
+    color: var(--ww-form-input-text-color, #374151);
+    outline: none;
+    background: var(--ww-form-input-bg, #ffffff);
+    box-sizing: border-box;
+
+    &::placeholder {
+      color: var(--ww-form-input-placeholder-color, #9ca3af);
+    }
+  }
+
+  // List of countries
+  &-country-list {
+    max-height: 220px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  // Country option row
+  &-country-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--ww-form-input-text-color, #374151);
+    transition: background 0.1s;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    &--selected {
+      background: rgba(99, 102, 241, 0.08);
+      font-weight: 600;
+    }
+  }
+
+  &-option-flag {
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  &-option-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &-option-dial {
+    color: var(--ww-form-input-placeholder-color, #9ca3af);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+}
+
+// Error state — applied from parent via class on the wrapper
+.ww-form-input--error .ww-phone-input,
+.ww-phone-input.ww-form-input--error {
+  border-color: var(--ww-form-error-color, #ef4444);
+}

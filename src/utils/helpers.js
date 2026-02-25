@@ -2,7 +2,7 @@
  * Pure utility functions — no Vue reactivity, no WeWeb dependencies.
  */
 
-const INPUT_TYPES = ["text", "email", "password", "number", "tel", "url", "date"];
+const INPUT_TYPES = ["text", "email", "password", "number", "url", "date"];
 
 export function isInputType(type) {
   return INPUT_TYPES.includes(type);
