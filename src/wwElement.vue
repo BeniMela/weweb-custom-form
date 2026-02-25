@@ -141,7 +141,7 @@
           <label
             v-else-if="field.type === 'checkbox'"
             class="ww-form-checkbox-label"
-            :class="{ 'ww-form-checkbox-label--dirty': isFieldDirty(field.id) }"
+            :class="{ 'ww-form-checkbox-label--dirty': isFieldDirty(field.id), 'ww-form-checkbox-label--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
             :for="`${uid}-${field.id}`"
           >
             <input

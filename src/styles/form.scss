@@ -189,6 +189,12 @@
   padding: 4px 8px;
 }
 
+.ww-form-checkbox-label--error {
+  background-color: var(--ww-form-error-bg, #ffdddd);
+  border-radius: var(--ww-form-input-radius, 8px);
+  padding: 4px 8px;
+}
+
 .ww-form-original {
   font-size: var(--ww-form-original-font-size, 12px);
   color: var(--ww-form-original-color, #9ca3af);
