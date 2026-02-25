@@ -49,7 +49,7 @@
           :class="[
             `ww-form-field--${field.width || 'full'}`,
             { 'ww-form-field--section': field.type === 'section' },
-            { 'ww-form-field--error': errors[field.id] },
+            { 'ww-form-field--error': errors[field.id] || groupErrorFieldIds.has(field.id) },
             { 'ww-form-field--dirty': isFieldDirty(field.id) },
           ]"
         >
@@ -78,7 +78,7 @@
             :readonly="isReadOnly || field.readOnly"
             :disabled="isReadOnly || field.readOnly"
             class="ww-form-input"
-            :class="{ 'ww-form-input--readonly': isReadOnly || field.readOnly, 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] }"
+            :class="{ 'ww-form-input--readonly': isReadOnly || field.readOnly, 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
             @input="handleInput(field.id, $event.target.value)"
             @focus="handleFocus(field.id)"
             @blur="handleBlur(field.id)"
@@ -94,7 +94,7 @@
             :readonly="isReadOnly || field.readOnly"
             :disabled="isReadOnly || field.readOnly"
             class="ww-form-input ww-form-textarea"
-            :class="{ 'ww-form-input--readonly': isReadOnly || field.readOnly, 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] }"
+            :class="{ 'ww-form-input--readonly': isReadOnly || field.readOnly, 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
             rows="4"
             @input="handleInput(field.id, $event.target.value)"
             @focus="handleFocus(field.id)"
@@ -113,7 +113,7 @@
             :readonly="isReadOnly || field.readOnly"
             :no-results-text="t('noResults')"
             :selected-count-label="t('selected')"
-            :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] }"
+            :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
             @update:model-value="handleInput(field.id, $event)"
             @focus="handleFocus(field.id)"
             @blur="handleBlur(field.id)"
@@ -130,7 +130,7 @@
             :readonly="isReadOnly || field.readOnly"
             :no-results-text="t('noResults')"
             :loading-text="t('loading')"
-            :input-class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] }"
+            :input-class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
             @update:model-value="handleSearchSelect(field, $event)"
             @search="handleSearchQuery(field.id, $event)"
             @focus="handleFocus(field.id)"
@@ -169,7 +169,7 @@
             :disabled="isReadOnly || field.readOnly"
             :readonly="isReadOnly || field.readOnly"
             :no-results-text="t('noResults')"
-            :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] }"
+            :class="{ 'ww-form-input--dirty': isFieldDirty(field.id), 'ww-form-input--error': errors[field.id] || groupErrorFieldIds.has(field.id) }"
             @update:model-value="handleInput(field.id, $event)"
             @focus="handleFocus(field.id)"
             @blur="handleBlur(field.id)"
@@ -183,8 +183,13 @@
             {{ formatOriginalValue(field) }}
           </div>
 
-          <!-- Error message -->
+          <!-- Field error message -->
           <div v-if="errors[field.id]" class="ww-form-error">{{ errors[field.id] }}</div>
+
+          <!-- Group error message — shown once after the last field of the group -->
+          <div v-if="groupErrorAfterField[field.id]" class="ww-form-error ww-form-error--group">
+            {{ groupErrorAfterField[field.id] }}
+          </div>
           </template>
         </div>
       </div>
@@ -246,6 +251,19 @@ export default {
 
     // Form state (includes validation, handlers, actions, watchers)
     const form = useFormState(props, ctx, { processedFields, getDefaultValues, isReadOnly, t });
+
+    // Returns the group error message to display after this field (last field in group), or null
+    const groupErrorAfterField = computed(() => {
+      const result = {};
+      for (const g of form.groupErrors.value) {
+        const lastId = g.fields[g.fields.length - 1];
+        if (lastId) result[lastId] = g.message;
+      }
+      return result;
+    });
+
+    // Set of field IDs that are part of a failing group (for red border)
+    const groupErrorFieldIds = computed(() => form.getGroupErrorFieldIds());
 
     // Map a raw item to { value, label } using field's searchValueKey and searchLabelTemplate
     function mapSearchItem(item, field) {
@@ -369,6 +387,8 @@ export default {
       // State
       formDataValues: form.formDataValues,
       errors: form.errors,
+      groupErrorAfterField,
+      groupErrorFieldIds,
       // Computed
       processedFields,
       rootStyle,

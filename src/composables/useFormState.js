@@ -29,11 +29,15 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
   // ==========================================
   const formDataValues = ref({});
   const errors = ref({});
+  // groupErrors: array of { message, fields[] } — displayed once after the last field of the group
+  const groupErrors = ref([]);
   const touchedSet = ref(new Set());
   const originalValues = ref({});
   const searchResults = ref({});
 
-  const hasErrors = computed(() => Object.keys(errors.value).length > 0);
+  const hasErrors = computed(() =>
+    Object.keys(errors.value).length > 0 || groupErrors.value.length > 0
+  );
 
   // ==========================================
   // Dirty tracking
@@ -93,36 +97,42 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
     return null;
   }
 
-  function applyGroupValidation(newErrors) {
+  // Returns array of { message, fields[] } for failing groups
+  function evaluateGroups() {
     const groups = props.content?.validationGroups;
-    if (!Array.isArray(groups)) return;
+    if (!Array.isArray(groups)) return [];
+    const failing = [];
     for (const group of groups) {
       if (group.formula === false) {
         const fieldIds = String(group.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-        const msg = group.message || t("patternInvalid");
-        for (const fieldId of fieldIds) {
-          if (!newErrors[fieldId]) newErrors[fieldId] = msg;
-        }
+        failing.push({ message: group.message || t("patternInvalid"), fields: fieldIds });
       }
     }
+    return failing;
+  }
+
+  // Returns set of field IDs that belong to a failing group (for red border)
+  function getGroupErrorFieldIds() {
+    const ids = new Set();
+    for (const g of groupErrors.value) {
+      for (const id of g.fields) ids.add(id);
+    }
+    return ids;
   }
 
   function validateAll() {
     const newErrors = {};
-    let allValid = true;
 
     for (const field of processedFields.value) {
       const error = validateField(field.id);
-      if (error) {
-        newErrors[field.id] = error;
-        allValid = false;
-      }
+      if (error) newErrors[field.id] = error;
     }
 
-    applyGroupValidation(newErrors);
-    allValid = Object.keys(newErrors).length === 0;
+    const newGroupErrors = evaluateGroups();
+    const allValid = Object.keys(newErrors).length === 0 && newGroupErrors.length === 0;
 
     errors.value = newErrors;
+    groupErrors.value = newGroupErrors;
     setErrors(newErrors);
     setIsValid(allValid);
 
@@ -147,22 +157,14 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
     } else {
       delete newErrors[fieldId];
     }
-    // Re-apply group validation: clear stale group errors then re-add active ones
-    const groups = props.content?.validationGroups;
-    if (Array.isArray(groups)) {
-      // Clear all group-managed field errors first
-      for (const group of groups) {
-        const fieldIds = String(group.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-        for (const id of fieldIds) {
-          delete newErrors[id];
-        }
-      }
-      // Re-apply current group state
-      applyGroupValidation(newErrors);
-    }
     errors.value = newErrors;
     setErrors(newErrors);
-    setIsValid(Object.keys(newErrors).length === 0);
+    setIsValid(Object.keys(newErrors).length === 0 && groupErrors.value.length === 0);
+  }
+
+  function updateGroupValidation() {
+    groupErrors.value = evaluateGroups();
+    setIsValid(Object.keys(errors.value).length === 0 && groupErrors.value.length === 0);
   }
 
   // ==========================================
@@ -221,15 +223,7 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
       for (const group of groups) {
         if (!group.validateOnChange) continue;
         const groupFieldIds = String(group.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-        if (groupFieldIds.includes(fieldId)) {
-          const newErrors = { ...errors.value };
-          for (const id of groupFieldIds) delete newErrors[id];
-          applyGroupValidation(newErrors);
-          errors.value = newErrors;
-          setErrors(newErrors);
-          setIsValid(Object.keys(newErrors).length === 0);
-          break;
-        }
+        if (groupFieldIds.includes(fieldId)) { updateGroupValidation(); break; }
       }
     }
   }
@@ -261,15 +255,7 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
         for (const group of groups) {
           if (group.validateOnBlur === false) continue;
           const groupFieldIds = String(group.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-          if (groupFieldIds.includes(fieldId)) {
-            const newErrors = { ...errors.value };
-            for (const id of groupFieldIds) delete newErrors[id];
-            applyGroupValidation(newErrors);
-            errors.value = newErrors;
-            setErrors(newErrors);
-            setIsValid(Object.keys(newErrors).length === 0);
-            break;
-          }
+          if (groupFieldIds.includes(fieldId)) { updateGroupValidation(); break; }
         }
       }
     }
@@ -311,6 +297,7 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
 
     formDataValues.value = merged;
     errors.value = {};
+    groupErrors.value = [];
     touchedSet.value = new Set();
 
     setFormData({ ...merged });
@@ -347,6 +334,7 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
 
   function clearErrors() {
     errors.value = {};
+    groupErrors.value = [];
     setErrors({});
     setIsValid(true);
   }
@@ -411,6 +399,8 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
   return {
     formDataValues,
     errors,
+    groupErrors,
+    getGroupErrorFieldIds,
     searchResults,
     originalValues,
     hasAnyDirty,

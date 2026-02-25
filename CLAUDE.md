@@ -144,7 +144,7 @@ formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_i
 - `validateOnChange` (OnOff, default `false`) — re-evaluate when any listed field changes
 - `validateOnBlur` (OnOff, default `true`) — re-evaluate when any listed field blurs
 
-Group errors are cleared and re-applied on each relevant change/blur and on `validateAll`. Always evaluated on submit.
+Group errors are stored separately from field errors in `groupErrors` ref. Fields in a failing group get a red border (`ww-form-input--error`) but **no repeated text**. The error message is displayed **once**, after the last field listed in `fields`, with a `⚠` icon and a left-bordered banner style (`ww-form-error--group`). Always evaluated on submit.
 ```
 // Example: at least one address type must be checked
 formula: formData.adr_is_billing || formData.adr_is_delivery || formData.adr_is_pickup

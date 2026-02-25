@@ -200,6 +200,23 @@
   font-size: 12px;
   color: var(--ww-form-error-color, #ef4444);
   margin-top: 2px;
+
+  &--group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    padding: 6px 10px;
+    background-color: var(--ww-form-error-bg, #ffdddd);
+    border-left: 3px solid var(--ww-form-error-color, #ef4444);
+    border-radius: 0 4px 4px 0;
+    font-size: 12px;
+
+    &::before {
+      content: "⚠";
+      flex-shrink: 0;
+    }
+  }
 }
 
 // ==========================================
