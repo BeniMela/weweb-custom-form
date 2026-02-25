@@ -133,9 +133,9 @@ Validation is formula-based only — no built-in type validators (no minLength, 
 formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_iso_code ?? "")
 ```
 
-**Per-field `validateOnChange`** (OnOff, default `false`) — Re-validate this field immediately on value change. Falls back to global `validateOnChange` setting.
+**Per-field `validateOnChange`** (OnOff, default `false`) — Re-validate this field immediately on value change.
 
-**Per-field `validateOnBlur`** (OnOff, default `true`) — Re-validate this field on blur. Falls back to global `validateOnBlur` setting.
+**Per-field `validateOnBlur`** (OnOff, default `true`) — Re-validate this field on blur.
 
 **`validationGroups`** (Array) — Cross-field validation rules. Each group has:
 - `formula` (Text, bindable) — returns `true` (valid) or `false` (invalid)

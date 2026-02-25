@@ -212,10 +212,8 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
       event: { fieldId, value, formData: { ...formDataValues.value } },
     });
 
-    // Per-field validateOnChange (falls back to global setting)
     const fieldDef = processedFields.value.find((f) => f.id === fieldId);
-    const fieldOnChange = fieldDef?.validateOnChange ?? props.content?.validateOnChange ?? false;
-    if (fieldOnChange) updateFieldValidation(fieldId);
+    if (fieldDef?.validateOnChange) updateFieldValidation(fieldId);
 
     // Groups with validateOnChange: re-evaluate if this field belongs to the group
     const groups = props.content?.validationGroups;
@@ -254,10 +252,8 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
     });
 
     if (!isReadOnly.value) {
-      // Per-field validateOnBlur (falls back to global setting)
       const fieldDef = processedFields.value.find((f) => f.id === fieldId);
-      const fieldOnBlur = fieldDef?.validateOnBlur ?? props.content?.validateOnBlur ?? true;
-      if (fieldOnBlur) updateFieldValidation(fieldId);
+      if (fieldDef?.validateOnBlur !== false) updateFieldValidation(fieldId);
 
       // Groups with validateOnBlur: re-evaluate if this field belongs to the group
       const groups = props.content?.validationGroups;

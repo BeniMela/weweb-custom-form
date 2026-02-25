@@ -43,7 +43,7 @@ export default {
       {
         label: "Validation",
         isCollapsible: true,
-        properties: ["validateOnBlur", "validateOnChange", "validationGroups"],
+        properties: ["validationGroups"],
       },
     ],
     customStylePropertiesOrder: [
@@ -955,36 +955,6 @@ export default {
       bindingValidation: {
         type: "string",
         tooltip: "Text displayed on the reset button",
-      },
-      /* wwEditor:end */
-    },
-
-    // ==========================================
-    // SETTINGS - Validation behavior
-    // ==========================================
-    validateOnBlur: {
-      label: { en: "Validate on Blur" },
-      type: "OnOff",
-      section: "settings",
-      bindable: true,
-      defaultValue: true,
-      /* wwEditor:start */
-      bindingValidation: {
-        type: "boolean",
-        tooltip: "Validate fields when they lose focus",
-      },
-      /* wwEditor:end */
-    },
-    validateOnChange: {
-      label: { en: "Validate on Change" },
-      type: "OnOff",
-      section: "settings",
-      bindable: true,
-      defaultValue: false,
-      /* wwEditor:start */
-      bindingValidation: {
-        type: "boolean",
-        tooltip: "Validate fields as the user types",
       },
       /* wwEditor:end */
     },
