@@ -119,6 +119,7 @@ Backward compatible: `"form"` and `undefined` map to Edit mode.
 
 | Action | Args | Description |
 |--------|------|-------------|
+| `submitForm` | none | Trigger submit programmatically (validates + fires `submit` event if valid) |
 | `resetForm` | none | Reset to initial values |
 | `setFieldValue` | `(fieldId, value)` | Set a specific field's value |
 | `validate` | none | Run validation on all fields |

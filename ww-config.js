@@ -136,6 +136,7 @@ export default {
     },
   ],
   actions: [
+    { label: "Submit form", action: "submitForm" },
     { label: "Reset form", action: "resetForm" },
     {
       label: "Set field value",

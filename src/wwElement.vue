@@ -450,6 +450,7 @@ export default {
       handleReset: form.handleReset,
       handleSearchQuery: form.handleSearchQuery,
       // Actions (WeWeb workflows)
+      submitForm: form.handleSubmit,
       resetForm: form.resetForm,
       setFieldValue: form.setFieldValue,
       validate: form.validate,
