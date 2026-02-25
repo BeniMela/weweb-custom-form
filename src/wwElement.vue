@@ -256,15 +256,28 @@ export default {
       });
     }
 
-    // Split processedFields into blocks separated by section entries.
-    // Each block: { section: field|null, fields: field[] }
-    // The first block has section=null if there are fields before the first section.
+    // Split processedFields into section blocks for rendering.
+    // If props.content.sections is defined and non-empty, use it (Option A).
+    // Otherwise fall back to extracting type==="section" entries from processedFields.
     const fieldBlocks = computed(() => {
+      const sections = props.content?.sections;
+      const fieldMap = Object.fromEntries(processedFields.value.map((f) => [f.id, f]));
+
+      if (Array.isArray(sections) && sections.length > 0) {
+        return sections.map((section) => {
+          const fieldIds = String(section.fields ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+          return {
+            section: { label: section.label ?? "", hidden: false },
+            fields: fieldIds.map((id) => fieldMap[id]).filter(Boolean),
+          };
+        });
+      }
+
+      // Fallback: extract sections from type==="section" fields
       const blocks = [];
       let current = { section: null, fields: [] };
       for (const field of processedFields.value) {
         if (field.type === "section") {
-          // Always push the current block (even if empty, to preserve section order)
           blocks.push(current);
           current = { section: field, fields: [] };
         } else {
@@ -272,7 +285,6 @@ export default {
         }
       }
       blocks.push(current);
-      // Drop leading empty block (no section, no fields)
       return blocks.filter((b) => b.section !== null || b.fields.length > 0);
     });
 

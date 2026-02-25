@@ -17,6 +17,7 @@ export default {
       },
       "generateFieldsButton",
       "fields",
+      "sections",
       "fieldsIdFormula",
       "fieldsLabelFormula",
       "fieldsTypeFormula",
@@ -987,6 +988,50 @@ export default {
       bindingValidation: {
         type: "string",
         tooltip: "Text displayed on the reset button",
+      },
+      /* wwEditor:end */
+    },
+
+    sections: {
+      label: { en: "Sections" },
+      type: "Array",
+      section: "settings",
+      defaultValue: [],
+      options: {
+        expandable: true,
+        movable: true,
+        getItemLabel(item, index) {
+          return item?.label?.length ? item.label : `Section ${index + 1}`;
+        },
+        item: {
+          type: "Object",
+          defaultValue: {
+            label: "",
+            fields: "",
+          },
+          options: {
+            item: {
+              label: {
+                label: { en: "Section title" },
+                type: "Text",
+              },
+              fields: {
+                label: { en: "Field IDs (comma-separated)" },
+                type: "Text",
+                /* wwEditor:start */
+                propertyHelp: {
+                  tooltip: 'Comma-separated field IDs included in this section. Example: "adr_street,adr_street2"',
+                },
+                /* wwEditor:end */
+              },
+            },
+            propertiesOrder: ["label", "fields"],
+          },
+        },
+      },
+      /* wwEditor:start */
+      propertyHelp: {
+        tooltip: "Define visual sections to group fields. Each section has a title and a list of field IDs. Fields not assigned to any section are not rendered.",
       },
       /* wwEditor:end */
     },

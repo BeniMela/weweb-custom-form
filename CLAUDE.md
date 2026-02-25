@@ -67,13 +67,15 @@ Editor-only code (`generateFields`, `isEditing`) stays in `wwElement.vue` inside
 
 Backward compatible: `"form"` and `undefined` map to Edit mode. `display` mode simply sets `isReadOnly = true` internally — no separate template. Checked checkboxes render with a green accent in readonly mode (`.ww-form-checkbox-label--readonly`).
 
-**Section rendering:** `processedFields` is split into `fieldBlocks` (computed) — `[{ section: field|null, fields: field[] }]`. Each block renders a `.ww-form-section-block` (section header + its own `.ww-form-fields` grid). Fields before the first `section` go into a block with `section: null`. This isolates column alignment per section.
+**Section rendering:** `fieldBlocks` computed — `[{ section: { label, hidden }, fields: field[] }]` — drives the template. Each block renders a `.ww-form-section-block` (title + independent `.ww-form-fields` grid), isolating column alignment per section.
+
+**Priority:** If `props.content.sections` is a non-empty array, it is used to build `fieldBlocks` (field IDs resolved from `processedFields` via a `fieldMap`). If `sections` is empty/absent, falls back to extracting `type === "section"` entries from `processedFields` (legacy behaviour).
 
 ### Field Types
 
 `text`, `email`, `password`, `number`, `phone`, `url`, `date`, `textarea`, `select`, `checkbox`, `radio`, `search`, `section`
 
-**`section`** — Visual group delimiter with optional title and a horizontal rule. No value in `formData`. Each `section` entry in `fields` starts a new independent flex grid (`.ww-form-section-block`), so `half`/`third` fields in one section never align with those of another. Set `label` to the section title (e.g. "Localisation"), leave empty for a plain divider.
+**`section`** — Legacy field type, kept for fallback compatibility. Prefer using the dedicated `sections` array instead (see below).
 
 **`phone`** — International phone input with country selector. Uses `libphonenumber-js/min` for parsing, formatting and validation. See "Phone — International Phone Type" section below.
 
@@ -143,6 +145,19 @@ formData.unl_unlocodes_id?.unl_code?.startsWith(formData.cou_countries_id?.cou_i
 **Per-field `validateOnChange`** (OnOff, default `false`) — Re-validate this field immediately on value change.
 
 **Per-field `validateOnBlur`** (OnOff, default `true`) — Re-validate this field on blur.
+
+**`sections`** (Array) — Defines visual groupings of fields. Each section has:
+- `label` (Text) — section title displayed as a bold header with a horizontal rule
+- `fields` (Text) — comma-separated field IDs: `"adr_street,adr_street2"`
+
+Fields not assigned to any section are **not rendered**. Sections each get their own independent flex grid, so `half`/`third` widths within a section align only with each other.
+```
+sections: [
+  { label: "Adresse", fields: "adr_street,adr_street2" },
+  { label: "Localisation", fields: "adr_zip,adr_city,adr_country" },
+]
+```
+If `sections` is empty or absent, falls back to `type === "section"` entries in `fields` (legacy).
 
 **`validationGroups`** (Array) — Cross-field validation rules. Each group has:
 - `formula` (Text, bindable) — returns `true` (valid) or `false` (invalid)
