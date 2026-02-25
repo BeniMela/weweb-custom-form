@@ -19,14 +19,14 @@
             :class="{ 'ww-form-section--card': block.section.mode === 'card' }"
           >
             <span
-              v-if="block.section.icon || (block.section.showLabel && block.section.label)"
+              v-if="(block.section.showIcon && block.section.icon) || (block.section.showLabel && block.section.label)"
               class="ww-form-section-title"
               :style="{
                 fontSize: block.section.fontSize || undefined,
                 fontWeight: block.section.fontWeight || undefined,
               }"
             >
-              <span v-if="block.section.icon" class="material-symbols-rounded ww-form-section-icon" :style="{ fontSize: block.section.fontSize || undefined }">{{ block.section.icon }}</span>
+              <span v-if="block.section.showIcon && block.section.icon" class="material-symbols-rounded ww-form-section-icon" :style="{ fontSize: block.section.fontSize || undefined }">{{ block.section.icon }}</span>
               <span v-if="block.section.showLabel && block.section.label">{{ block.section.label }}</span>
             </span>
           </div>
@@ -289,6 +289,7 @@ export default {
             section: {
               label: section.label ?? "",
               showLabel: section.showLabel !== false,
+              showIcon: section.showIcon !== false,
               icon: section.icon ?? "",
               fontSize: section.fontSize ?? "",
               fontWeight: section.fontWeight ?? "600",

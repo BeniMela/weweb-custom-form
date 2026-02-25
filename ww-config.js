@@ -1008,6 +1008,7 @@ export default {
           defaultValue: {
             label: "",
             showLabel: true,
+            showIcon: true,
             icon: "",
             fontSize: "",
             fontWeight: "600",
@@ -1032,12 +1033,17 @@ export default {
                 type: "OnOff",
                 defaultValue: true,
               },
+              showIcon: {
+                label: { en: "Show icon" },
+                type: "OnOff",
+                defaultValue: true,
+              },
               icon: {
-                label: { en: "Icon (Material Icons name)" },
+                label: { en: "Icon (Material Symbols name)" },
                 type: "Text",
                 /* wwEditor:start */
                 propertyHelp: {
-                  tooltip: 'Material Icons ligature name. Example: "home", "person", "location_on". Leave empty for no icon.',
+                  tooltip: 'Material Symbols Rounded ligature name. Example: "home", "person", "location_on". Leave empty for no icon.',
                 },
                 /* wwEditor:end */
               },
@@ -1085,7 +1091,7 @@ export default {
                 /* wwEditor:end */
               },
             },
-            propertiesOrder: ["label", "showLabel", "icon", "fontSize", "fontWeight", "mode", "fields"],
+            propertiesOrder: ["label", "showLabel", "showIcon", "icon", "fontSize", "fontWeight", "mode", "fields"],
           },
         },
       },
