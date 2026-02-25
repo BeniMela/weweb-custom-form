@@ -207,7 +207,16 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
       event: { fieldId, value, formData: { ...formDataValues.value } },
     });
 
-    if (props.content?.validateOnChange) updateFieldValidation(fieldId);
+    if (props.content?.validateOnChange) {
+      updateFieldValidation(fieldId);
+      // Re-validate other fields that have a validationFormula, since their
+      // result may depend on the value that just changed (e.g. checkbox group)
+      for (const field of processedFields.value) {
+        if (field.id !== fieldId && field.validationFormula !== null && field.validationFormula !== undefined) {
+          updateFieldValidation(field.id);
+        }
+      }
+    }
   }
 
   function handleSearchQuery(fieldId, query) {
@@ -229,6 +238,12 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
 
     if (props.content?.validateOnBlur !== false && !isReadOnly.value) {
       updateFieldValidation(fieldId);
+      // Re-validate other fields with validationFormula (may depend on this field's value)
+      for (const field of processedFields.value) {
+        if (field.id !== fieldId && field.validationFormula !== null && field.validationFormula !== undefined) {
+          updateFieldValidation(field.id);
+        }
+      }
     }
   }
 
