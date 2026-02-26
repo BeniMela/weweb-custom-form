@@ -84,7 +84,8 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
 
     if (field.required) {
       const isEmpty = value === undefined || value === null || value === "" || value === false ||
-        (field.type === "search" && !value?.[field.searchValueKey ?? "id"] && !value?.value);
+        (field.type === "search" && !value?.[field.searchValueKey ?? "id"] && !value?.value) ||
+        (field.type === "array" && (!Array.isArray(value) || value.length === 0));
       if (isEmpty) return field.validationMessage || t("required");
     }
 
@@ -103,6 +104,24 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
         }
       } catch (e) {
         return field.validationMessage || t("phoneInvalid");
+      }
+    }
+
+    // Array column validation
+    if (field.type === "array" && Array.isArray(value)) {
+      for (let i = 0; i < value.length; i++) {
+        const row = value[i];
+        for (const col of field.arrayColumns ?? []) {
+          const colVal = row[col.id];
+          if (col.required && (colVal === undefined || colVal === null || colVal === "" || colVal === false)) {
+            return `${t("row")} ${i + 1} — ${col.label || col.id}: ${t("required")}`;
+          }
+          if (col.type === "email" && colVal) {
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(colVal))) {
+              return `${t("row")} ${i + 1} — ${col.label || col.id}: ${t("emailInvalid")}`;
+            }
+          }
+        }
       }
     }
 
@@ -389,6 +408,11 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
             merged[key] = current;
           }
           // else keep null from defaults
+        } else if (field?.type === "array") {
+          // Preserve array values as-is
+          if (Array.isArray(current)) {
+            merged[key] = current;
+          }
         } else {
           merged[key] = current;
         }

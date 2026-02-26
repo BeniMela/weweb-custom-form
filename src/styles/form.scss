@@ -306,6 +306,77 @@
 
 
 // ==========================================
+// Array field (repeatable rows)
+// ==========================================
+
+.ww-form-array {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.ww-form-array-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  width: 100%;
+}
+
+.ww-form-array-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+
+  &--full { flex: 1 1 0; }
+  &--half { flex: 1 1 0; max-width: calc(50% - 4px); }
+  &--auto { flex: 0 0 auto; }
+}
+
+.ww-form-array-col-label {
+  margin-bottom: 0;
+}
+
+// Checkbox in array row: align vertically centered with other inputs
+.ww-form-array-checkbox {
+  height: var(--ww-form-input-height, 38px);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ww-form-array-remove {
+  flex: 0 0 auto;
+  align-self: flex-end;
+  height: var(--ww-form-input-height, 38px);
+  padding: 0 10px;
+  background: transparent;
+  border: 1px solid var(--ww-form-input-border, #d1d5db);
+  border-radius: var(--ww-form-input-radius, 6px);
+  color: var(--ww-form-error-color, #dc2626);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+
+  &:hover { background-color: #fef2f2; border-color: var(--ww-form-error-color, #dc2626); }
+}
+
+.ww-form-array-add {
+  align-self: flex-start;
+  padding: 6px 12px;
+  background: transparent;
+  border: 1px dashed var(--ww-form-input-border, #d1d5db);
+  border-radius: var(--ww-form-input-radius, 6px);
+  color: var(--ww-form-label-color, #374151);
+  cursor: pointer;
+  font-size: var(--ww-form-label-font-size, 14px);
+
+  &:hover { background-color: #f9fafb; border-color: #9ca3af; }
+}
+
+
+// ==========================================
 // Buttons
 // ==========================================
 .ww-form-actions {

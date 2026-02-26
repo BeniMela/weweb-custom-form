@@ -101,6 +101,8 @@ export function useFields(props) {
         phoneStoreFormat: String(phoneStoreFormat),
         defaultValue,
         width: field?.width ?? "full",
+        arrayColumns: Array.isArray(field?.arrayColumns) ? field.arrayColumns : [],
+        arrayAddLabel: field?.arrayAddLabel ?? "",
       };
     });
   });
@@ -111,6 +113,8 @@ export function useFields(props) {
       if (field.type === "section") {
         // Section separators have no value in formData
         continue;
+      } else if (field.type === "array") {
+        defaults[field.id] = Array.isArray(field.defaultValue) ? field.defaultValue : [];
       } else if (field.type === "search") {
         defaults[field.id] = null;
       } else if (field.type === "checkbox") {

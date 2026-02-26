@@ -73,11 +73,34 @@ Backward compatible: `"form"` and `undefined` map to Edit mode. `display` mode s
 
 ### Field Types
 
-`text`, `email`, `password`, `number`, `phone`, `url`, `date`, `textarea`, `select`, `checkbox`, `radio`, `search`, `section`
+`text`, `email`, `password`, `number`, `phone`, `url`, `date`, `textarea`, `select`, `checkbox`, `radio`, `search`, `section`, `array`
 
 **`section`** — Legacy field type, kept for fallback compatibility. Prefer using the dedicated `sections` array instead (see below).
 
 **`phone`** — International phone input with country selector. Uses `libphonenumber-js/min` for parsing, formatting and validation. See "Phone — International Phone Type" section below.
+
+**`array`** — Repeatable rows of sub-fields. `formData[fieldId]` is an array of objects. Each row has columns defined by `arrayColumns`.
+- `arrayColumns` (Array) — columns in each row: `{ id, label, type, required, isPrimaryColumn, width }`
+  - Supported column types: `text`, `email`, `number`, `url`, `date`, `textarea`, `checkbox`
+  - `isPrimaryColumn` (bool) — radio behavior: checking one row auto-unchecks all others for that column
+  - `width`: `full` (flex 1), `half` (max 50%), `auto` (shrink to content)
+- `arrayAddLabel` (Text) — custom label for the "+ Add" button; falls back to `t("addRow")`
+- **Validation**: `required` on the field = at least 1 row; `required` on a column = value in every row; email columns are format-validated per row
+- **Handlers**: `handleArrayInput(fieldId, rowIndex, colId, value, col)`, `addArrayRow(fieldId)`, `removeArrayRow(fieldId, rowIndex)`
+- **CSS**: `.ww-form-array`, `.ww-form-array-row`, `.ww-form-array-col--{full|half|auto}`, `.ww-form-array-add`, `.ww-form-array-remove`
+
+```javascript
+// Example: con_emails field
+{
+  id: "con_emails", label: "Emails", type: "array",
+  arrayColumns: [
+    { id: "email", label: "Email", type: "email", required: true, width: "full" },
+    { id: "is_primary", label: "Principal", type: "checkbox", isPrimaryColumn: true, width: "auto" },
+  ],
+  arrayAddLabel: "Ajouter un email",
+}
+// formData.con_emails = [{ email: "a@b.com", is_primary: true }, ...]
+```
 
 ### Per-field Read Only, Show Label & Hidden
 

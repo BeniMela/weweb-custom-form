@@ -370,6 +370,8 @@ export default {
             phoneStoreFormat: "e164",
             defaultValue: "",
             width: "full",
+            arrayColumns: [],
+            arrayAddLabel: "",
           },
           options: (content, sidePanelContent, boundProperties, wwProps, array) => ({
             item: {
@@ -400,6 +402,7 @@ export default {
                     { value: "checkbox", label: "Checkbox" },
                     { value: "radio", label: "Radio" },
                     { value: "section", label: "Section separator" },
+                    { value: "array", label: "Array (repeatable rows)" },
                   ],
                 },
               },
@@ -409,7 +412,8 @@ export default {
                 bindable: true,
                 hidden:
                   array?.item?.type === "checkbox" ||
-                  array?.item?.type === "radio",
+                  array?.item?.type === "radio" ||
+                  array?.item?.type === "array",
               },
               required: {
                 label: { en: "Required" },
@@ -624,7 +628,7 @@ export default {
                 label: { en: "Default Value" },
                 type: "Text",
                 bindable: true,
-                hidden: array?.item?.type === "section",
+                hidden: array?.item?.type === "section" || array?.item?.type === "array",
               },
               width: {
                 label: { en: "Width" },
@@ -636,6 +640,69 @@ export default {
                     { value: "third", label: "Third" },
                   ],
                 },
+              },
+              arrayColumns: {
+                label: { en: "Columns" },
+                type: "Array",
+                hidden: array?.item?.type !== "array",
+                options: {
+                  expandable: true,
+                  movable: true,
+                  getItemLabel(item, index) {
+                    return item?.label?.length ? item.label : `Column ${index + 1}`;
+                  },
+                  item: {
+                    type: "Object",
+                    defaultValue: { id: "field", label: "Field", type: "text", required: false, isPrimaryColumn: false, width: "full" },
+                    options: {
+                      item: {
+                        id:    { label: { en: "ID" },    type: "Text" },
+                        label: { label: { en: "Label" }, type: "Text" },
+                        type: {
+                          label: { en: "Type" },
+                          type: "TextSelect",
+                          options: { options: [
+                            { value: "text",     label: "Text",     default: true },
+                            { value: "email",    label: "Email" },
+                            { value: "number",   label: "Number" },
+                            { value: "url",      label: "URL" },
+                            { value: "date",     label: "Date" },
+                            { value: "textarea", label: "Textarea" },
+                            { value: "checkbox", label: "Checkbox" },
+                          ]},
+                        },
+                        required: { label: { en: "Required" }, type: "OnOff", defaultValue: false },
+                        isPrimaryColumn: {
+                          label: { en: "Auto-exclusive (is_primary)" },
+                          type: "OnOff",
+                          defaultValue: false,
+                          /* wwEditor:start */
+                          propertyHelp: { tooltip: "Checking one row will automatically uncheck all other rows for this column (radio behavior)." },
+                          /* wwEditor:end */
+                        },
+                        width: {
+                          label: { en: "Width" },
+                          type: "TextSelect",
+                          options: { options: [
+                            { value: "full",  label: "Full",  default: true },
+                            { value: "half",  label: "Half" },
+                            { value: "auto",  label: "Auto (shrink to content)" },
+                          ]},
+                        },
+                      },
+                      propertiesOrder: ["id", "label", "type", "required", "isPrimaryColumn", "width"],
+                    },
+                  },
+                },
+              },
+              arrayAddLabel: {
+                label: { en: "Add row button text" },
+                type: "Text",
+                defaultValue: "",
+                hidden: array?.item?.type !== "array",
+                /* wwEditor:start */
+                propertyHelp: { tooltip: 'Label of the "+ Add row" button. Leave empty to use the default translated label.' },
+                /* wwEditor:end */
               },
             },
             propertiesOrder: [
@@ -658,6 +725,8 @@ export default {
               "phoneStoreFormat",
               "defaultValue",
               "width",
+              "arrayColumns",
+              "arrayAddLabel",
               {
                 label: "Validation",
                 isCollapsible: true,

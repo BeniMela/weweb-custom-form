@@ -17,6 +17,9 @@ const translations = {
     was: "Était :",
     submit: "Envoyer",
     reset: "Réinitialiser",
+    addRow: "Ajouter",
+    removeRow: "Supprimer",
+    row: "Ligne",
   },
   en: {
     required: "This field is required",
@@ -34,6 +37,9 @@ const translations = {
     was: "Was:",
     submit: "Submit",
     reset: "Reset",
+    addRow: "Add",
+    removeRow: "Remove",
+    row: "Row",
   },
 };
 

@@ -174,6 +174,78 @@
               @blur="handleBlur(field.id)"
             />
 
+            <!-- Array / Repeatable rows -->
+            <div v-else-if="field.type === 'array'" class="ww-form-array">
+              <div
+                v-for="(row, rowIndex) in (formDataValues[field.id] ?? [])"
+                :key="`${field.id}-row-${rowIndex}`"
+                class="ww-form-array-row"
+              >
+                <div
+                  v-for="col in field.arrayColumns"
+                  :key="col.id"
+                  class="ww-form-array-col"
+                  :class="`ww-form-array-col--${col.width || 'full'}`"
+                >
+                  <!-- Column header label — show only on first row -->
+                  <label v-if="col.type !== 'checkbox' && rowIndex === 0" class="ww-form-label ww-form-array-col-label">
+                    {{ col.label || col.id }}
+                    <span v-if="col.required && !(isReadOnly || field.readOnly)" class="ww-form-required">*</span>
+                  </label>
+                  <!-- text / email / number / url / date -->
+                  <input
+                    v-if="['text','email','number','url','date'].includes(col.type)"
+                    :type="col.type"
+                    :value="row[col.id]"
+                    :disabled="isReadOnly || field.readOnly"
+                    class="ww-form-input"
+                    @input="handleArrayInput(field.id, rowIndex, col.id, $event.target.value, col)"
+                  />
+                  <!-- textarea -->
+                  <textarea
+                    v-else-if="col.type === 'textarea'"
+                    :value="row[col.id]"
+                    :disabled="isReadOnly || field.readOnly"
+                    class="ww-form-input ww-form-textarea"
+                    rows="2"
+                    @input="handleArrayInput(field.id, rowIndex, col.id, $event.target.value, col)"
+                  ></textarea>
+                  <!-- checkbox (incl. isPrimaryColumn auto-exclusive) -->
+                  <label
+                    v-else-if="col.type === 'checkbox'"
+                    class="ww-form-checkbox-label ww-form-array-checkbox"
+                    :class="{ 'ww-form-checkbox-label--readonly': isReadOnly || field.readOnly }"
+                  >
+                    <input
+                      type="checkbox"
+                      :checked="row[col.id] === true"
+                      :disabled="isReadOnly || field.readOnly"
+                      class="ww-form-checkbox"
+                      @change="handleArrayInput(field.id, rowIndex, col.id, $event.target.checked, col)"
+                    />
+                    <span>{{ col.label || col.id }}</span>
+                  </label>
+                </div>
+
+                <!-- Remove row button -->
+                <button
+                  v-if="!(isReadOnly || field.readOnly)"
+                  type="button"
+                  class="ww-form-array-remove"
+                  @click="removeArrayRow(field.id, rowIndex)"
+                  :title="t('removeRow')"
+                >×</button>
+              </div>
+
+              <!-- Add row button -->
+              <button
+                v-if="!(isReadOnly || field.readOnly)"
+                type="button"
+                class="ww-form-array-add"
+                @click="addArrayRow(field.id)"
+              >+ {{ field.arrayAddLabel || t('addRow') }}</button>
+            </div>
+
             <!-- Original value (edit mode, dirty only) -->
             <div
               v-if="isEditMode && content?.showOriginalValue !== false && isFieldDirty(field.id)"
@@ -273,6 +345,39 @@ export default {
         });
         return visibleFieldIds[visibleFieldIds.length - 1] === fieldId;
       });
+    }
+
+    // ==========================================
+    // Array field handlers
+    // ==========================================
+    function handleArrayInput(fieldId, rowIndex, colId, value, col) {
+      const current = form.formDataValues.value[fieldId] ?? [];
+      const updated = current.map((row, i) => {
+        if (i !== rowIndex) {
+          // Auto-exclusive: if isPrimaryColumn and new value is true, uncheck others
+          if (col?.isPrimaryColumn && value === true) {
+            return { ...row, [colId]: false };
+          }
+          return row;
+        }
+        return { ...row, [colId]: value };
+      });
+      form.handleInput(fieldId, updated);
+    }
+
+    function addArrayRow(fieldId) {
+      const field = processedFields.value.find((f) => f.id === fieldId);
+      const current = form.formDataValues.value[fieldId] ?? [];
+      const newRow = {};
+      for (const col of field?.arrayColumns ?? []) {
+        newRow[col.id] = col.type === "checkbox" ? false : "";
+      }
+      form.handleInput(fieldId, [...current, newRow]);
+    }
+
+    function removeArrayRow(fieldId, rowIndex) {
+      const current = form.formDataValues.value[fieldId] ?? [];
+      form.handleInput(fieldId, current.filter((_, i) => i !== rowIndex));
     }
 
     // Split processedFields into section blocks for rendering.
@@ -463,6 +568,9 @@ export default {
       // Form methods
       isFieldDirty: form.isFieldDirty,
       formatOriginalValue,
+      handleArrayInput,
+      addArrayRow,
+      removeArrayRow,
       handleInput: form.handleInput,
       handleFocus: form.handleFocus,
       handleBlur: form.handleBlur,
