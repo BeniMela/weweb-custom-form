@@ -319,6 +319,7 @@
 .ww-form-array-row {
   display: flex;
   align-items: flex-end;
+  flex-wrap: wrap;
   gap: 8px;
   width: 100%;
 }
@@ -329,8 +330,8 @@
   gap: 4px;
   min-width: 0;
 
-  &--full { flex: 1 1 0; }
-  &--half { flex: 1 1 0; max-width: calc(50% - 4px); }
+  &--full { flex: 1 1 100%; }
+  &--half { flex: 1 1 calc(50% - 4px); min-width: 120px; }
   &--auto { flex: 0 0 auto; }
 }
 
@@ -349,6 +350,7 @@
 .ww-form-array-remove {
   flex: 0 0 auto;
   align-self: flex-end;
+  margin-left: auto;
   height: var(--ww-form-input-height, 38px);
   padding: 0 10px;
   background: transparent;
