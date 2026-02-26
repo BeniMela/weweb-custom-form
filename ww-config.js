@@ -663,11 +663,12 @@ export default {
                     },
                     options: {
                       item: {
-                        id:    { label: { en: "ID" },    type: "Text" },
-                        label: { label: { en: "Label" }, type: "Text" },
+                        id:    { label: { en: "ID" },    type: "Text",    width: "full" },
+                        label: { label: { en: "Label" }, type: "Text",    width: "full" },
                         type: {
                           label: { en: "Type" },
                           type: "TextSelect",
+                          width: "full",
                           options: { options: [
                             { value: "text",      label: "Text", default: true },
                             { value: "email",     label: "Email" },
@@ -684,42 +685,27 @@ export default {
                           ]},
                         },
                         width: {
-                          label: { en: "Width" }, type: "TextSelect",
+                          label: { en: "Width" }, type: "TextSelect", width: "full",
                           options: { options: [
                             { value: "full", label: "Full", default: true },
                             { value: "half", label: "Half" },
                             { value: "auto", label: "Auto" },
                           ]},
                         },
-                        placeholder: { label: { en: "Placeholder" }, type: "Text" },
-                        required:     { label: { en: "Required" },    type: "OnOff", defaultValue: false },
-                        isPrimaryColumn: {
-                          label: { en: "Auto-exclusive (is_primary)" }, type: "OnOff", defaultValue: false,
-                          /* wwEditor:start */
-                          propertyHelp: { tooltip: "Checking one row will automatically uncheck all other rows for this column (radio behavior)." },
-                          /* wwEditor:end */
-                        },
-                        options: {
-                          label: { en: "Options (select/radio)" }, type: "Text", bindable: true,
-                          /* wwEditor:start */
-                          propertyHelp: { tooltip: 'For select/radio columns. Bind an array or use "value:Label" CSV.' },
-                          /* wwEditor:end */
-                        },
-                        optionsValueKey:  { label: { en: "Value Key" },  type: "Text", defaultValue: "value" },
-                        optionsLabelKey:  { label: { en: "Label Key" },  type: "Text", defaultValue: "label" },
-                        optionsThreshold: { label: { en: "Threshold" },  type: "Number", defaultValue: 10, options: { min: 1, max: 100, step: 1 } },
-                        multiple:         { label: { en: "Multiple" },   type: "OnOff", defaultValue: false },
-                        searchDebounce:   { label: { en: "Debounce (ms)" }, type: "Number", defaultValue: 300, options: { min: 0, max: 2000, step: 50 } },
-                        searchValueKey:   { label: { en: "Search Value Key" }, type: "Text", defaultValue: "id" },
-                        searchLabelTemplate: {
-                          label: { en: "Search Label Template" }, type: "Text", defaultValue: "",
-                          /* wwEditor:start */
-                          propertyHelp: { tooltip: 'e.g. "{cou_label_fr} ({cou_iso_code})"' },
-                          /* wwEditor:end */
-                        },
-                        phoneDefaultCountry: { label: { en: "Phone Default Country" }, type: "Text", defaultValue: "FR" },
+                        placeholder:     { label: { en: "Placeholder" }, type: "Text",  width: "full" },
+                        required:        { label: { en: "Required" },    type: "OnOff", width: "full", defaultValue: false },
+                        isPrimaryColumn: { label: { en: "Auto-exclusive (is_primary)" }, type: "OnOff", width: "full", defaultValue: false },
+                        options:         { label: { en: "Options (select/radio)" }, type: "Text", width: "full", bindable: true },
+                        optionsValueKey: { label: { en: "Value Key" },  type: "Text",   width: "full", defaultValue: "value" },
+                        optionsLabelKey: { label: { en: "Label Key" },  type: "Text",   width: "full", defaultValue: "label" },
+                        optionsThreshold:{ label: { en: "Threshold" },  type: "Number", width: "full", defaultValue: 10, options: { min: 1, max: 100, step: 1 } },
+                        multiple:        { label: { en: "Multiple" },   type: "OnOff",  width: "full", defaultValue: false },
+                        searchDebounce:  { label: { en: "Debounce (ms)" }, type: "Number", width: "full", defaultValue: 300, options: { min: 0, max: 2000, step: 50 } },
+                        searchValueKey:  { label: { en: "Search Value Key" }, type: "Text", width: "full", defaultValue: "id" },
+                        searchLabelTemplate: { label: { en: "Search Label Template" }, type: "Text", width: "full", defaultValue: "" },
+                        phoneDefaultCountry: { label: { en: "Default Country" }, type: "Text", width: "full", defaultValue: "FR" },
                         phoneStoreFormat: {
-                          label: { en: "Phone Store Format" }, type: "TextSelect", defaultValue: "e164",
+                          label: { en: "Store Format" }, type: "TextSelect", width: "full", defaultValue: "e164",
                           options: { options: [
                             { value: "e164",     label: "E.164", default: true },
                             { value: "national", label: "National" },
