@@ -291,7 +291,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: var(--ww-form-label-font-size, 14px);
+  font-size: var(--ww-form-section-label-font-size, 16px);
   font-weight: 600;
   color: var(--ww-form-label-color, #374151);
   white-space: nowrap;
@@ -299,7 +299,7 @@
 }
 
 .ww-form-section-icon {
-  font: 400 var(--ww-form-label-font-size, 14px)/1 'Material Symbols Rounded', monospace;
+  font: 400 var(--ww-form-section-label-font-size, 16px)/1 'Material Symbols Rounded', monospace;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   vertical-align: middle;
 }
