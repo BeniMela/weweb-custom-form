@@ -239,10 +239,11 @@
 // ==========================================
 
 // The parent form stacks section blocks with a gap
+// --ww-form-section-gap controls spacing between sections (defaults to --ww-form-gap)
 .ww-dynamic-form form {
   display: flex;
   flex-direction: column;
-  gap: var(--ww-form-gap, 16px);
+  gap: var(--ww-form-section-gap, var(--ww-form-gap, 16px));
 }
 
 // Wraps the section header + its fields grid — stacks vertically
@@ -267,7 +268,7 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding-top: 4px;
+  padding-top: 32px;
 
   &::after {
     content: "";
