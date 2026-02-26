@@ -192,11 +192,12 @@
                     {{ col.label || col.id }}
                     <span v-if="col.required && !(isReadOnly || field.readOnly)" class="ww-form-required">*</span>
                   </label>
-                  <!-- text / email / number / url / date -->
+                  <!-- text / email / password / number / url / date -->
                   <input
-                    v-if="['text','email','number','url','date'].includes(col.type)"
+                    v-if="['text','email','password','number','url','date'].includes(col.type)"
                     :type="col.type"
                     :value="row[col.id]"
+                    :placeholder="col.placeholder || ''"
                     :disabled="isReadOnly || field.readOnly"
                     class="ww-form-input"
                     @input="handleArrayInput(field.id, rowIndex, col.id, $event.target.value, col)"
@@ -205,11 +206,52 @@
                   <textarea
                     v-else-if="col.type === 'textarea'"
                     :value="row[col.id]"
+                    :placeholder="col.placeholder || ''"
                     :disabled="isReadOnly || field.readOnly"
                     class="ww-form-input ww-form-textarea"
                     rows="2"
                     @input="handleArrayInput(field.id, rowIndex, col.id, $event.target.value, col)"
                   ></textarea>
+                  <!-- select / radio -->
+                  <SmartSelect
+                    v-else-if="col.type === 'select' || col.type === 'radio'"
+                    :model-value="row[col.id]"
+                    :options="parseOptions(col.options, col.optionsValueKey || 'value', col.optionsLabelKey || 'label')"
+                    :threshold="col.optionsThreshold || 10"
+                    :multiple="col.multiple"
+                    :placeholder="col.placeholder || t('selectPlaceholder')"
+                    :disabled="isReadOnly || field.readOnly"
+                    :readonly="isReadOnly || field.readOnly"
+                    :no-results-text="t('noResults')"
+                    :selected-count-label="t('selected')"
+                    @update:model-value="handleArrayInput(field.id, rowIndex, col.id, $event, col)"
+                  />
+                  <!-- phone -->
+                  <PhoneInput
+                    v-else-if="col.type === 'phone'"
+                    :model-value="row[col.id]"
+                    :default-country="col.phoneDefaultCountry || 'FR'"
+                    :store-format="col.phoneStoreFormat || 'e164'"
+                    :placeholder="col.placeholder || ''"
+                    :disabled="isReadOnly || field.readOnly"
+                    :readonly="isReadOnly || field.readOnly"
+                    :lang="content.lang || 'fr'"
+                    @update:model-value="handleArrayInput(field.id, rowIndex, col.id, $event, col)"
+                  />
+                  <!-- search (external) -->
+                  <SearchSelect
+                    v-else-if="col.type === 'search'"
+                    :model-value="row[col.id]"
+                    :options="getSearchOptions({ ...col, id: `${field.id}__${col.id}__${rowIndex}` })"
+                    :debounce="col.searchDebounce || 300"
+                    :placeholder="col.placeholder || t('selectPlaceholder')"
+                    :disabled="isReadOnly || field.readOnly"
+                    :readonly="isReadOnly || field.readOnly"
+                    :no-results-text="t('noResults')"
+                    :loading-text="t('loading')"
+                    @update:model-value="handleArrayInput(field.id, rowIndex, col.id, $event, col)"
+                    @search="handleSearchQuery(`${field.id}__${col.id}__${rowIndex}`, $event)"
+                  />
                   <!-- checkbox (incl. isPrimaryColumn auto-exclusive) -->
                   <label
                     v-else-if="col.type === 'checkbox'"

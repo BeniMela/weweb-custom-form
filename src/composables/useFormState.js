@@ -121,6 +121,15 @@ export function useFormState(props, ctx, { processedFields, getDefaultValues, is
               return `${t("row")} ${i + 1} — ${col.label || col.id}: ${t("emailInvalid")}`;
             }
           }
+          if (col.type === "phone" && colVal) {
+            try {
+              if (!isValidPhoneNumber(String(colVal), col.phoneDefaultCountry || "FR")) {
+                return `${t("row")} ${i + 1} — ${col.label || col.id}: ${t("phoneInvalid")}`;
+              }
+            } catch (e) {
+              return `${t("row")} ${i + 1} — ${col.label || col.id}: ${t("phoneInvalid")}`;
+            }
+          }
         }
       }
     }
